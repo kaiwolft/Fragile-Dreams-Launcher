@@ -120,3 +120,19 @@ Registro de lo que se hizo, qué falló y cómo se resolvió. Lo técnico detall
 | Problema | Causa | Solución |
 |---|---|---|
 | Ningún logro saltaba (progreso de recuerdos en 0) | El set oficial de RetroAchievements ya trae, en cada logro, un grupo alternativo para la versión europea (comprueba 0x80000000 = 'R2GP') con sus propias direcciones. El launcher traducía TODO de USA a EUR, así que ese grupo quedaba desplazado dos veces (+0x740 de más) y leía memoria equivocada | main.js v30: si el logro ya trae el grupo PAL se usa tal cual; la traducción queda solo de respaldo. Comprobado con un volcado de memoria: la zona EUR (0x803083F7) vale 19 = observatorio; la doble traducción leía 0 |
+| Logros se guardaban al momento | Se pidió que solo cuenten si se guarda la partida | main.js v31: los logros desbloqueados quedan "pendientes" (se ve el aviso) y solo se escriben en progreso.json cuando cambia la partida guardada (Dolphin-x64\User\Wii\title\00010000\52324750\data). Al cerrar sin guardar se descartan. progreso.json reiniciado |
+
+## 8. Carpeta final, Steam y GitHub (16 oct, noche)
+- **Carpeta final:** `scripts\12_CREAR_CARPETA_FINAL.bat` crea `E:\Juegos de DIonis Con launcher personalizado\Fragile Dreams (Dionixu's Launcher)` (launcher, motor, core, Dolphin portable sin cachés, juego EU original + español con enlaces duros, acceso directo FRAGILE DREAMS.lnk, LEEME.txt).
+- **Steam (todos los juegos):** `E:\...\AGREGAR_A_STEAM.ps1` ya incluye Fragile Dreams con arte (`steam_arte\fragile_{p,wide,hero,logo}.png`).
+- **Steam individual:** cada repositorio (Fragile Dreams, Pandora's Tower, The Last Story, Astral Chain) tiene `steam\AGREGAR_A_STEAM.bat/.ps1 + arte\`: busca el exe junto al script o en carpetas superiores, si no lo encuentra abre un selector; vale para cualquier usuario de Steam del PC; conserva el tiempo jugado; copia de seguridad shortcuts.vdf.antes_launchers. Plantilla: `steam\plantilla_AGREGAR_A_STEAM.ps1` del repo de Fragile Dreams.
+- **GitHub:** https://github.com/kaiwolft/Fragile-Dreams-Launcher — README español/inglés con capturas, aviso antipiratería, solo versión europea R2GP99 (MD5 de main.dol verificado), parche castellano 1.1 integrado (archivos + main.dol como diferencia), Ko-fi.
+- **Actions** (`.github/workflows/build.yml`): compila fd_logros/pt_bridge para Linux (Ubuntu 22.04, rcheevos v11.6.0), fd_motor.exe con MinGW, arma el instalador de Windows (Electron 44.5.1 + rcedit, Dolphin 2609a para DolphinTool, núcleo libretro nightly) y el AppImage (appimage.js), y publica en Releases al cambiar `VERSION`.
+- **Releases:** v1.0.0 (16 oct) y v1.0.1 (sonidos del instalador, protocolo fdi:// tolerante a archivos que faltan, Steam mejorado). Comprobado: SHA256 del AppImage OK, el AppImage se abre (probado con xvfb), el zip trae instalador, motor, núcleo, DolphinTool, diff de main.dol y Steam.
+
+## Pendiente (al 16 oct, noche)
+1. Ejecutar `scripts\12_CREAR_CARPETA_FINAL.bat` y luego `E:\...\AGREGAR_A_STEAM.bat`.
+2. Probar en juego que los logros solo se guardan al guardar partida.
+3. Probar el instalador de Windows de Releases en una carpeta limpia con la copia europea (el fd_motor.exe del instalador lo compila GitHub: comprobar que arranca igual que el local).
+4. Probar el AppImage en un Linux real con Dolphin Flatpak.
+5. Lo anterior: jugar a 60 FPS por varias zonas, idiomas fr/de, icono del exe (06_ICONO_EXE.bat), borrar motor\volcados.
