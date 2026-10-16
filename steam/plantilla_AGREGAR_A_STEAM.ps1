@@ -9,9 +9,10 @@ $ErrorActionPreference = 'Stop'
 # ---- datos del juego (rutas relativas a la carpeta de este script)
 $NOMBRE = '__NOMBRE__'
 $EXE    = '__EXE__'
-$ICONO  = '__ICONO__'
-$ARTE   = 'steam'          # carpeta con p.png, wide.png, hero.png, logo.png
+$ICONO  = @(__ICONO__)
 # ----
+# El script busca el juego en su propia carpeta y en las de arriba; si no lo encuentra, te deja elegir el .exe.
+# The script looks for the game next to itself and in the parent folders; if not found, it lets you pick the .exe.
 $base = $PSScriptRoot
 Add-Type -TypeDefinition @"
 using System; using System.IO; using System.Text; using System.Collections.Generic;
@@ -79,10 +80,39 @@ public static class SteamVdf {
 }
 "@
 
+function Buscar-Juego {
+  $d = $base
+  for ($i = 0; $i -lt 4 -and $d; $i++) {
+    $c = Join-Path $d $EXE; if (Test-Path -LiteralPath $c) { return (Resolve-Path -LiteralPath $c).Path }
+    $c = Join-Path $d (Split-Path $EXE -Leaf); if (Test-Path -LiteralPath $c) { return (Resolve-Path -LiteralPath $c).Path }
+    $d = Split-Path $d -Parent
+  }
+  Write-Host "No encuentro $(Split-Path $EXE -Leaf) junto a este archivo: eligelo en la ventana que se abre."
+  Write-Host "Could not find $(Split-Path $EXE -Leaf) next to this file: pick it in the window that opens."
+  Add-Type -AssemblyName System.Windows.Forms
+  $dlg = New-Object System.Windows.Forms.OpenFileDialog
+  $dlg.Title = "$NOMBRE - $(Split-Path $EXE -Leaf)"
+  $dlg.Filter = "$(Split-Path $EXE -Leaf)|$(Split-Path $EXE -Leaf)|*.exe|*.exe"
+  if ($dlg.ShowDialog() -eq 'OK') { return $dlg.FileName }
+  return $null
+}
+
 try {
-  $exe = Join-Path $base $EXE
-  if (-not (Test-Path -LiteralPath $exe)) { throw "No encuentro el juego en $exe (este archivo debe estar en la carpeta del juego) / Game not found." }
-  $ico = Join-Path $base $ICONO; if (-not (Test-Path -LiteralPath $ico)) { $ico = $exe }
+  $exe = Buscar-Juego
+  if (-not $exe) { throw 'No se eligio el juego / No game selected.' }
+  # carpeta raiz del juego = la que contiene la ruta relativa $EXE (p. ej. ...\launcher\Juego.exe -> ...)
+  $root = Split-Path $exe
+  $sub = Split-Path $EXE -Parent
+  if ($sub -and $root.ToLower().EndsWith($sub.ToLower())) { $root = $root.Substring(0, $root.Length - $sub.Length).TrimEnd('\') }
+  $ico = $exe
+  foreach ($i in $ICONO) { $c = Join-Path $root $i; if (Test-Path -LiteralPath $c) { $ico = $c; break } }
+  # arte: junto a este script (arte\ o steam\) o en la carpeta del juego (steam\)
+  $arteDir = $null
+  foreach ($c in @((Join-Path $base 'arte'), (Join-Path $base 'steam'), (Join-Path $base 'steam\arte'), (Join-Path $root 'steam'), (Join-Path $root 'steam\arte'))) {
+    if (Test-Path -LiteralPath (Join-Path $c 'p.png')) { $arteDir = $c; break }
+  }
+  if (-not $arteDir) { Write-Host 'Aviso: no encuentro el arte (carpeta arte\), se agrega sin imagenes / Artwork not found, adding without images.' }
+  Write-Host "Juego / Game: $exe"
   $steam = (Get-ItemProperty 'HKCU:\Software\Valve\Steam' -ErrorAction SilentlyContinue).SteamPath
   if (-not $steam -or -not (Test-Path $steam)) { throw 'No encuentro Steam instalado / Steam is not installed.' }
   $steam = $steam -replace '/', '\'
@@ -103,7 +133,8 @@ try {
     $id = [SteamVdf]::Upsert($data, $NOMBRE, $exe, (Split-Path $exe), $ico)
     $grid = Join-Path $cfg 'grid'; New-Item -ItemType Directory -Force $grid | Out-Null
     foreach ($pair in @(@('p', 'p'), @('wide', ''), @('hero', '_hero'), @('logo', '_logo'))) {
-      $src = Join-Path (Join-Path $base $ARTE) ($pair[0] + '.png')
+      if (-not $arteDir) { break }
+      $src = Join-Path $arteDir ($pair[0] + '.png')
       if (Test-Path -LiteralPath $src) { Copy-Item -LiteralPath $src (Join-Path $grid ("$id" + $pair[1] + '.png')) -Force }
     }
     [SteamVdf]::Save($vdf, $data)
