@@ -330,7 +330,8 @@ app.whenReady().then(() => {
     const rel = decodeURIComponent(new URL(req.url).pathname).replace(/^\/+/, '');
     const file = path.resolve(UI, rel);
     if (!file.startsWith(path.resolve(UI))) return new Response('', { status: 403 });
-    return net.fetch(pathToFileURL(file).toString());
+    if (!fs.existsSync(file)) return new Response('', { status: 404 });
+    return net.fetch(pathToFileURL(file).toString()).catch(() => new Response('', { status: 404 }));
   });
   win = new BrowserWindow({
     width: 1040, height: 640, minWidth: 900, minHeight: 560, frame: false, resizable: false, backgroundColor: '#070b12', show: false,
