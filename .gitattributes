@@ -1,0 +1,14 @@
+* text=auto
+*.ps1 text eol=crlf
+*.bat text eol=crlf
+*.sh text eol=lf
+AppRun text eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.mp3 binary
+*.ttf binary
+*.exe binary
+*.bin binary
+FILE_* binary
+instalador/appimage/runtime-x86_64 binary

@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Logro</title>
+<style>
+@font-face{font-family:"FD Cinzel";src:url(fonts/Cinzel.ttf) format("truetype");font-weight:400 900}
+@font-face{font-family:"FD Cormorant";src:url(fonts/CormorantGaramond.ttf) format("truetype");font-weight:300 700}
+html,body{margin:0;height:100%;overflow:hidden;background:transparent;user-select:none}
+#t{position:absolute;left:50%;top:18px;width:560px;height:96px;display:flex;align-items:center;gap:16px;padding:0 22px 0 14px;box-sizing:border-box;
+  transform:translate(-50%,-140%);opacity:0;transition:transform .6s cubic-bezier(.2,.9,.25,1),opacity .4s ease;
+  background:linear-gradient(90deg,rgba(9,22,50,.96),rgba(14,36,78,.94) 60%,rgba(9,22,50,.96));border:1px solid rgba(160,215,255,.55);
+  box-shadow:0 0 0 1px rgba(10,20,40,.7),0 0 26px rgba(90,170,255,.45),0 14px 36px rgba(0,0,0,.5)}
+#t.on{transform:translate(-50%,0);opacity:1}
+#t::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 35%,rgba(200,235,255,.25) 50%,transparent 65%);background-size:260% 100%;animation:sheen 2.4s ease-in-out infinite}
+@keyframes sheen{from{background-position:130% 0}to{background-position:-130% 0}}
+#ico{flex:none;width:66px;height:66px;display:grid;place-items:center;border:1px solid rgba(170,220,255,.6);background:#06102a;box-shadow:0 0 14px rgba(120,200,255,.5)}
+#ico img{width:64px;height:64px;display:block}
+#ico .lot{width:52px;height:auto;filter:drop-shadow(0 0 6px rgba(150,215,255,.9))}
+#tx{flex:1;min-width:0}
+#cap{font-family:"FD Cinzel",serif;font-size:11px;letter-spacing:4px;color:#8fd2ff}
+#ti{font-family:"FD Cinzel",serif;font-size:17px;letter-spacing:1.5px;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-shadow:0 0 12px rgba(140,205,255,.6)}
+#de{font-family:"FD Cormorant",serif;font-size:16px;font-style:italic;color:#c9d8ec;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#pt{flex:none;font-family:"FD Cinzel",serif;font-size:14px;letter-spacing:1px;color:#fff;border:1px solid rgba(170,220,255,.6);border-radius:14px;padding:4px 10px}
+</style>
+</head>
+<body>
+<div id="t"><div id="ico"></div><div id="tx"><div id="cap"></div><div id="ti"></div><div id="de"></div></div><div id="pt"></div></div>
+<script>
+(() => {
+  const host = window.fdHost; const $ = (id) => document.getElementById(id);
+  const post = (cmd) => host && host.postMessage(JSON.stringify({ cmd }));
+  let ac = null;
+  const chime = () => { try { ac = ac || new AudioContext(); const t0 = ac.currentTime;
+    [784, 1174.7, 1568, 2349.3].forEach((f, i) => { const o = ac.createOscillator(), g = ac.createGain(), t = t0 + i * .09; o.frequency.value = f;
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.07, t + .015); g.gain.exponentialRampToValueAtTime(.0001, t + 1.4);
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t + 1.5); }); } catch (e) {} };
+  if (host) host.addEventListener('message', (ev) => {
+    let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+    if (m.type !== 'show') return;
+    const d = m.data || {};
+    $('cap').textContent = d.lang === 'en' ? 'ACHIEVEMENT UNLOCKED' : 'LOGRO DESBLOQUEADO';
+    $('ti').textContent = d.title || ''; $('de').textContent = d.description || '';
+    $('pt').textContent = (d.points || 0) + (d.lang === 'en' ? ' pts' : ' pts');
+    $('ico').innerHTML = d.badge ? '<img src="' + d.badge + '" alt="">' : '<img class="lot" src="assets/lotus.png" alt="">';
+    if (d.sound) chime();
+    requestAnimationFrame(() => $('t').classList.add('on'));
+    setTimeout(() => { $('t').classList.remove('on'); setTimeout(() => post('toastDone'), 700); }, 5200);
+  });
+})();
+</script>
+</body>
+</html>

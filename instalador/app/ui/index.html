@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Dionixu's Launcher — Fragile Dreams</title>
+<style>
+@font-face{font-family:"PT Cinzel";src:url(fonts/Cinzel.ttf) format("truetype");font-weight:400 900}
+@font-face{font-family:"PT Cormorant";src:url(fonts/CormorantGaramond.ttf) format("truetype");font-weight:300 700}
+@font-face{font-family:"PT Cormorant";src:url(fonts/CormorantGaramond-Italic.ttf) format("truetype");font-weight:300 700;font-style:italic}
+:root{--ink:#efe7d7;--ink-soft:#c3baa9;--mute:#8a8f96;--line:rgba(239,231,215,.34);--line-soft:rgba(239,231,215,.14);--panel:rgba(11,14,20,.90);
+  --bar1:#123a52;--bar2:#2d7f9e;--amber:#9fd6e4;--glow:rgba(159,214,228,.45);--ok:#8fc58a;--bad:#e2775f;
+  --display:"PT Cinzel","Cinzel",Georgia,serif;--body:"PT Cormorant","Cormorant Garamond",Garamond,Georgia,serif}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;user-select:none;background:#070b12;font-variant-numeric:lining-nums;font-family:var(--body);color:var(--ink)}
+html,body,*{cursor:-webkit-image-set(url(assets/cursor.png) 1x,url(assets/cursor@2x.png) 2x) 2 2,default!important}
+button,button *,label.chk,label.chk *,.lang{cursor:-webkit-image-set(url(assets/cursor_on.png) 1x,url(assets/cursor_on@2x.png) 2x) 2 2,pointer!important}
+button{font:inherit;color:inherit}
+button:focus,button:focus-visible{outline:none}
+#bg{position:fixed;inset:0;background:url(assets/art.jpg) 20% 30%/cover;filter:saturate(.7) brightness(.55)}
+#shade{position:fixed;inset:0;background:linear-gradient(90deg,rgba(7,11,18,.2) 0,rgba(7,11,18,.75) 40%,#070b12 78%),linear-gradient(180deg,rgba(7,11,18,.4),transparent 30%,transparent 70%,rgba(7,11,18,.85))}
+.frame1{position:fixed;inset:10px;border:1px solid var(--line);pointer-events:none}
+.frame2{position:fixed;inset:15px;border:1px solid var(--line-soft);pointer-events:none}
+#drag{position:fixed;left:0;top:0;right:110px;height:42px;-webkit-app-region:drag;z-index:5}
+.winbtns{position:fixed;top:20px;right:28px;display:flex;gap:4px;z-index:6}
+.iconbtn{width:34px;height:30px;border:0;background:transparent;border-radius:3px;display:flex;align-items:center;justify-content:center;color:var(--ink-soft)}
+.iconbtn:hover{background:var(--line-soft);color:var(--ink)}
+#logo{position:fixed;left:34px;top:22px;width:230px;pointer-events:none;filter:drop-shadow(0 4px 14px rgba(0,0,0,.6))}
+#brand{position:fixed;left:40px;top:196px;width:265px;font-family:var(--display);font-size:11px;letter-spacing:2px;line-height:1.5;color:var(--mute)}
+#brand b{display:block;font-size:18px;letter-spacing:2.5px;color:var(--ink);font-weight:600;margin-bottom:3px}
+#panel{position:fixed;left:320px;top:170px;width:680px;height:430px;padding:22px 26px;background:var(--panel);border:1px solid var(--line);display:flex;flex-direction:column;gap:12px;box-shadow:0 18px 50px rgba(0,0,0,.5)}
+#panel::before,#panel::after{content:"";position:absolute;width:24px;height:24px;border:2px solid var(--amber);pointer-events:none}
+#panel::before{left:-6px;top:-6px;border-right:0;border-bottom:0}
+#panel::after{right:-6px;bottom:-6px;border-left:0;border-top:0}
+#steps{position:fixed;left:320px;top:132px;display:flex;gap:6px}
+.dot{font-family:var(--display);font-size:10.5px;letter-spacing:1.6px;color:var(--mute);padding:4px 10px;border-bottom:2px solid transparent}
+.dot.on{color:var(--ink);border-color:var(--amber)}
+.dot.done{color:var(--ink-soft)}
+h2{margin:0;font-family:var(--display);font-size:20px;font-weight:600;letter-spacing:3px;color:var(--ink)}
+.sub{margin:0;font-size:16.5px;font-style:italic;color:var(--ink-soft)}
+.scroll{flex:1;overflow-y:auto;padding-right:6px}
+.scroll::-webkit-scrollbar{width:6px}.scroll::-webkit-scrollbar-thumb{background:var(--line);border-radius:3px}
+.legal{font-size:17px;line-height:1.38;color:var(--ink-soft)}
+.legal b{color:var(--ink)}
+.legal h3{margin:4px 0 6px;font-family:var(--display);font-size:13px;letter-spacing:2px;color:var(--amber)}
+.legal ul{margin:6px 0 10px;padding-left:22px}
+.legal .warn{border-left:3px solid var(--bar2);background:rgba(45,127,158,.14);padding:8px 12px;margin:10px 0}
+.foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:8px;border-top:1px solid var(--line-soft)}
+.btn{min-width:150px;height:40px;padding:0 18px;border:1px solid var(--line);background:transparent;font-family:var(--display);font-size:13px;font-weight:600;letter-spacing:2.4px;color:var(--ink-soft)}
+.btn:hover{border-color:var(--amber);color:var(--ink)}
+.btn.main{color:#f2fbff;background:linear-gradient(180deg,var(--bar2),var(--bar1));border-color:var(--bar2)}
+.btn.main:hover{box-shadow:0 0 16px var(--glow)}
+.btn:disabled{opacity:.4;pointer-events:none}
+label.chk{display:flex;align-items:center;gap:10px;font-size:17.5px;color:var(--ink)}
+label.chk input{width:18px;height:18px;accent-color:var(--bar2)}
+.langs{display:flex;gap:14px;margin-top:6px}
+.lang{flex:1;height:96px;border:1px solid var(--line);background:transparent;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-family:var(--display);font-size:18px;letter-spacing:2px;color:var(--ink)}
+.lang small{font-family:var(--body);font-size:14.5px;font-style:italic;letter-spacing:0;color:var(--mute)}
+.lang:hover{border-color:var(--amber)}
+.lang.on{background:linear-gradient(180deg,var(--bar2),var(--bar1));border-color:var(--bar2);color:#f2fbff}.lang.on small{color:rgba(230,248,255,.8)}
+.field{display:grid;grid-template-columns:170px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line-soft)}
+.field .lbl{font-family:var(--display);font-size:12.5px;font-weight:600;letter-spacing:1.4px;color:var(--ink)}
+.field .lbl small{display:block;font-family:var(--body);font-size:14px;font-style:italic;font-weight:400;letter-spacing:0;color:var(--mute)}
+.path{min-height:34px;padding:6px 10px;border:1px solid var(--line);background:rgba(255,255,255,.03);font-size:15.5px;word-break:break-all;color:var(--ink)}
+.path.empty{color:var(--mute);font-style:italic}
+.state{grid-column:2/4;font-family:var(--display);font-size:11px;letter-spacing:1.4px;margin-top:-4px}
+.state.ok{color:var(--ok)} .state.bad{color:var(--bad)} .state.wait{color:var(--mute)}
+.small{font-size:15px;color:var(--ink-soft);font-style:italic;margin:4px 0}
+.bar{height:14px;border:1px solid var(--line);background:rgba(255,255,255,.03);position:relative;overflow:hidden}
+.bar>div{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,var(--bar1),var(--bar2));transition:width .6s ease}
+.bar>div::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(200,240,255,.35) 50%,transparent 70%);background-size:250% 100%;animation:sheen 1.8s ease-in-out infinite}
+@keyframes sheen{from{background-position:120% 0}to{background-position:-120% 0}}
+#stepTxt{font-family:var(--display);font-size:14px;letter-spacing:1.6px;color:var(--ink)}
+#logBox{flex:1;overflow-y:auto;font-family:Consolas,"DejaVu Sans Mono",monospace;font-size:11.5px;line-height:1.45;color:var(--ink-soft);background:rgba(0,0,0,.3);border:1px solid var(--line-soft);padding:8px;white-space:pre-wrap;word-break:break-all}
+.big{font-family:var(--display);font-size:26px;letter-spacing:3px;color:var(--ink);text-align:center;margin-top:24px}
+.center{text-align:center}
+.err{color:var(--bad);font-size:17px}
+.view{display:none;flex:1;flex-direction:column;gap:12px;min-height:0}
+.view.on{display:flex;animation:viewIn .3s ease}
+@keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div id="bg"></div><div id="shade"></div>
+<div class="frame1"></div><div class="frame2"></div>
+<div id="drag"></div>
+<div class="winbtns">
+  <button class="iconbtn" id="bMin" aria-label="—"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 7h12" stroke="currentColor" stroke-width="1.3"/></svg></button>
+  <button class="iconbtn" id="bClose" aria-label="×"><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 2l10 10M12 2L2 12" stroke="currentColor" stroke-width="1.3"/></svg></button>
+</div>
+<img id="logo" src="assets/logo.png" alt="Fragile Dreams">
+<div id="brand"><b>DIONIXU'S LAUNCHER</b><span id="tSub">INSTALADOR · FRAGILE DREAMS</span></div>
+<div id="steps"></div>
+
+<div id="panel">
+  <!-- 0 idioma -->
+  <section class="view on" data-v="lang">
+    <h2 data-t="langTitle"></h2>
+    <p class="sub" data-t="langSub"></p>
+    <div class="langs">
+      <button class="lang" data-l="en">English<small>Install in English</small></button>
+      <button class="lang" data-l="es">Español<small>Instalar en español</small></button>
+    </div>
+    <div style="flex:1"></div>
+    <div class="foot"><span class="small" id="pfNote"></span><button class="btn main" data-next data-t="next"></button></div>
+  </section>
+  <!-- 1 aviso legal -->
+  <section class="view" data-v="legal">
+    <h2 data-t="legalTitle"></h2>
+    <div class="scroll legal" id="legalTxt"></div>
+    <label class="chk"><input type="checkbox" id="accept"><span data-t="accept"></span></label>
+    <div class="foot"><button class="btn" data-back data-t="back"></button><button class="btn main" data-next id="legalNext" data-t="next" disabled></button></div>
+  </section>
+  <!-- 2 archivos -->
+  <section class="view" data-v="files">
+    <h2 data-t="filesTitle"></h2>
+    <p class="sub" data-t="filesSub"></p>
+    <div class="scroll" id="fields"></div>
+    <div class="foot"><button class="btn" data-back data-t="back"></button><button class="btn main" data-next id="filesNext" data-t="next" disabled></button></div>
+  </section>
+  <!-- 3 destino -->
+  <section class="view" data-v="dest">
+    <h2 data-t="destTitle"></h2>
+    <p class="sub" data-t="destSub"></p>
+    <div class="field"><span class="lbl" data-t="destLbl"></span><div class="path" id="destPath"></div><button class="btn" id="destPick" data-t="browse"></button></div>
+    <p class="small" data-t="space"></p>
+    <label class="chk"><input type="checkbox" id="optDesk" checked><span data-t="optDesk"></span></label>
+    <label class="chk"><input type="checkbox" id="optMenu" checked><span data-t="optMenu"></span></label>
+    <div style="flex:1"></div>
+    <div class="foot"><button class="btn" data-back data-t="back"></button><button class="btn main" id="goInstall" data-t="install"></button></div>
+  </section>
+  <!-- 4 instalando -->
+  <section class="view" data-v="run">
+    <h2 data-t="runTitle"></h2>
+    <div id="stepTxt"></div>
+    <div class="bar"><div id="barFill"></div></div>
+    <div id="logBox"></div>
+    <div class="foot"><span class="small" data-t="runNote"></span><span id="pct" style="font-family:var(--display);letter-spacing:1px">0%</span></div>
+  </section>
+  <!-- 5 listo / error -->
+  <section class="view" data-v="done">
+    <div class="big" data-t="doneTitle"></div>
+    <p class="sub center" data-t="doneSub"></p>
+    <p class="center small" id="countdown"></p>
+    <div style="flex:1"></div>
+    <div class="foot"><button class="btn" id="openFolder" data-t="openFolder"></button><button class="btn main" id="launchNow" data-t="launch"></button></div>
+  </section>
+  <section class="view" data-v="fail">
+    <h2 data-t="failTitle"></h2>
+    <p class="err" id="failTxt"></p>
+    <p class="small" data-t="failSub"></p>
+    <div style="flex:1"></div>
+    <div class="foot"><button class="btn" id="failBack" data-t="back"></button><button class="btn" id="failClose" data-t="close"></button></div>
+  </section>
+</div>
+
+<script>
+(() => {
+  const host = window.ptHost;
+  const DIRNAME = 'Fragile Dreams';
+  const $ = (id) => document.getElementById(id);
+  const send = (cmd, extra) => host && host.postMessage(JSON.stringify(Object.assign({ cmd }, extra || {})));
+  const sfx = {}; ['move', 'ok', 'back', 'start'].forEach((n) => { sfx[n] = new Audio('assets/sfx/' + n + '.ogg'); sfx[n].volume = .3; });
+  const play = (n) => { try { sfx[n].currentTime = 0; sfx[n].play().catch(() => {}); } catch (e) {} };
+
+  // ------------------------------------------------------------ textos
+  const S = {
+    es: {
+      sub: 'INSTALADOR · FRAGILE DREAMS', steps: ['IDIOMA', 'AVISO', 'TU COPIA', 'DESTINO', 'INSTALACIÓN'],
+      langTitle: 'IDIOMA', langSub: 'Elige el idioma del instalador y del launcher. Con español, el juego queda con la traducción al castellano integrada (puedes cambiarlo en Ajustes).',
+      next: 'SIGUIENTE', back: 'ATRÁS', browse: 'EXAMINAR', install: 'INSTALAR', close: 'CERRAR',
+      legalTitle: 'AVISO IMPORTANTE', accept: 'He leído el aviso. Tengo mi propia copia original de Fragile Dreams (versión europea).',
+      legal: `<h3>ESTE INSTALADOR NO INCLUYE EL JUEGO</h3>
+<p>Para instalar <b>Fragile Dreams: Farewell Ruins of the Moon</b> necesitas <b>tu propia copia original y legal</b> de la:</p>
+<ul><li><b>versión europea (PAL)</b> del juego para Wii, ID <b>R2GP99</b>.</li></ul>
+<p>La imagen debe venir de <b>tu disco</b> (por ejemplo, copiada con tu propia Wii y CleanRip). Se aceptan RVZ, ISO, WBFS, WIA y GCZ. La versión americana (R2GEXJ) y la japonesa <b>no sirven</b>.</p>
+<p><b>La traducción al castellano ya viene integrada:</b> el instalador aplica sobre tu copia la traducción 1.1 de xulikotony, CUE, TheKiller, Klint, Pacochan, GameZelda e IlDucci (TioVictor / Romhack Hispano). No necesitas Riivolution ni nada más.</p>
+<div class="warn"><b>Solo funciona con tu copia oficial.</b> El instalador comprueba que la imagen coincida exactamente con el disco original sin modificar. Si no coincide, la instalación se detiene.</div>
+<div class="warn"><b>No a la piratería.</b> Dionixu's Launcher no fomenta, no acepta y no da soporte a la piratería. No descargues ni compartas imágenes de juegos. Necesitas tu copia oficial.</div>
+<p>Fragile Dreams © Namco Bandai Games / tri-Crescendo · Rising Star Games / XSEED Games. Este proyecto es un trabajo de aficionados sin ánimo de lucro y no está afiliado ni respaldado por ellos. Usa Dolphin Emulator (GPLv2) y su núcleo libretro.</p>`,
+      filesTitle: 'TU COPIA ORIGINAL', filesSub: 'Elige la imagen de tu disco. Se comprueba el ID al momento.',
+      fUS: 'VERSIÓN EUROPEA', fUSs: 'PAL · R2GP99', fDol: 'TU DOLPHIN', fDols: 'Linux: paquete, AppImage o Flatpak', fTool: 'DOLPHINTOOL', fTools: 'dolphin-tool (para leer el disco)',
+      none: 'Sin seleccionar', checking: 'COMPROBANDO…', okId: '✓ {0} DETECTADO', badId: '✗ {0} — NO ES LA VERSIÓN EUROPEA', noTool: 'Elige primero tu DolphinTool', toolOk: '✓ LISTO', toolBad: '✗ NO RESPONDE',
+      dolHint: 'Detectado: {0}', dolNone: 'Instala Dolphin (el Flatpak org.DolphinEmu.dolphin-emu, o sudo apt install dolphin-emu) y elígelo aquí.',
+      destTitle: 'CARPETA DE INSTALACIÓN', destSub: 'Dónde se instalará el juego. Puedes moverla después.', destLbl: 'CARPETA',
+      space: 'Necesita unos 6 GB libres.', optDesk: 'Crear acceso directo en el escritorio', optMenu: 'Añadir al menú de inicio / aplicaciones',
+      runTitle: 'INSTALANDO', runNote: 'No cierres el instalador. Puede tardar entre 5 y 15 minutos.',
+      st: { check: 'Comprobando tu copia…', extract: 'Extrayendo el disco…', verify: 'Verificando la copia original…', spanish: 'Integrando la traducción al castellano…',
+        launcher: 'Instalando Dionixu\'s Launcher…', engine: 'Instalando el motor y Dolphin…', shortcuts: 'Creando accesos directos…', done: '¡Instalación completa!' },
+      doneTitle: '¡LISTO!', doneSub: 'Fragile Dreams está instalado. El launcher se abrirá en una ventana.', countdown: 'Abriendo en {0}…', launch: 'ABRIR AHORA', openFolder: 'ABRIR CARPETA',
+      failTitle: 'NO SE PUDO INSTALAR', failSub: 'No se ha modificado nada fuera de la carpeta de instalación. Revisa el aviso y vuelve a intentarlo (detalles en instalacion.log).',
+      e: { id: 'La imagen no es la versión europea (ID {1}). Se necesita R2GP99.', verify: 'Tu copia no coincide con el disco europeo original sin modificar. Solo se admite tu copia oficial.',
+        space: 'No hay espacio suficiente: se necesitan unos {0} GB libres.', extract: 'DolphinTool no pudo leer la imagen: {0}', patch: 'No se pudo integrar la traducción al castellano.', payload: 'Faltan archivos del instalador (carpeta payload).' },
+      eu: 'europea', pfWin: 'Windows · motor y Dolphin incluidos', pfLin: 'Linux (AppImage) · usa tu propio Dolphin'
+    },
+    en: {
+      sub: 'INSTALLER · FRAGILE DREAMS', steps: ['LANGUAGE', 'NOTICE', 'YOUR COPY', 'FOLDER', 'INSTALL'],
+      langTitle: 'LANGUAGE', langSub: 'Choose the language of the installer and the launcher. You can change the game text language later in Settings.',
+      next: 'NEXT', back: 'BACK', browse: 'BROWSE', install: 'INSTALL', close: 'CLOSE',
+      legalTitle: 'IMPORTANT NOTICE', accept: 'I have read the notice. I own an original copy of Fragile Dreams (European version).',
+      legal: `<h3>THIS INSTALLER DOES NOT INCLUDE THE GAME</h3>
+<p>To install <b>Fragile Dreams: Farewell Ruins of the Moon</b> you need <b>your own original, legal copy</b> of the:</p>
+<ul><li><b>European (PAL) version</b> of the Wii game, ID <b>R2GP99</b>.</li></ul>
+<p>The image must come from <b>your disc</b> (for example, dumped with your own Wii and CleanRip). RVZ, ISO, WBFS, WIA and GCZ are accepted. The US (R2GEXJ) and Japanese versions <b>will not work</b>.</p>
+<p><b>The Spanish translation is built in:</b> the installer applies the Spanish fan translation 1.1 (xulikotony, CUE, TheKiller, Klint, Pacochan, GameZelda and IlDucci — TioVictor / Romhack Hispano) to your copy. English, French, German and Japanese voices/text from your disc stay available.</p>
+<div class="warn"><b>It only works with your official copy.</b> The installer checks that the image exactly matches the original, unmodified disc. If it doesn't, installation stops.</div>
+<div class="warn"><b>No piracy.</b> Dionixu's Launcher does not encourage, accept or support piracy. Do not download or share game images. You need your official copy.</div>
+<p>Fragile Dreams © Namco Bandai Games / tri-Crescendo · Rising Star Games / XSEED Games. This is a non-profit fan project, not affiliated with or endorsed by them. Uses Dolphin Emulator (GPLv2) and its libretro core.</p>`,
+      filesTitle: 'YOUR ORIGINAL COPY', filesSub: 'Choose the image of your disc. Its ID is checked right away.',
+      fUS: 'EUROPEAN VERSION', fUSs: 'PAL · R2GP99', fDol: 'YOUR DOLPHIN', fDols: 'Linux: package, AppImage or Flatpak', fTool: 'DOLPHINTOOL', fTools: 'dolphin-tool (reads the disc)',
+      none: 'Not selected', checking: 'CHECKING…', okId: '✓ {0} DETECTED', badId: '✗ {0} — NOT THE EUROPEAN VERSION', noTool: 'Choose your DolphinTool first', toolOk: '✓ READY', toolBad: '✗ NOT RESPONDING',
+      dolHint: 'Detected: {0}', dolNone: 'Install Dolphin (the org.DolphinEmu.dolphin-emu Flatpak, or sudo apt install dolphin-emu) and choose it here.',
+      destTitle: 'INSTALL FOLDER', destSub: 'Where the game will be installed. You can move it later.', destLbl: 'FOLDER',
+      space: 'Needs about 6 GB free.', optDesk: 'Create a desktop shortcut', optMenu: 'Add to the start / applications menu',
+      runTitle: 'INSTALLING', runNote: 'Do not close the installer. This may take 5 to 15 minutes.',
+      st: { check: 'Checking your copy…', extract: 'Extracting the disc…', verify: 'Verifying the original copy…', spanish: 'Building in the Spanish translation…',
+        launcher: "Installing Dionixu's Launcher…", engine: 'Installing the engine and Dolphin…', shortcuts: 'Creating shortcuts…', done: 'Installation complete!' },
+      doneTitle: 'ALL SET!', doneSub: 'Fragile Dreams is installed. The launcher will open in a window.', countdown: 'Opening in {0}…', launch: 'OPEN NOW', openFolder: 'OPEN FOLDER',
+      failTitle: 'INSTALLATION FAILED', failSub: 'Nothing outside the install folder was changed. Check the notice and try again (details in instalacion.log).',
+      e: { id: 'The image is not the European version (ID {1}). R2GP99 is required.', verify: 'Your copy does not match the original, unmodified European disc. Only your official copy is supported.',
+        space: 'Not enough space: about {0} GB free is needed.', extract: 'DolphinTool could not read the image: {0}', patch: 'The Spanish translation could not be applied.', payload: 'Installer files are missing (payload folder).' },
+      eu: 'European', pfWin: 'Windows · engine and Dolphin included', pfLin: 'Linux (AppImage) · uses your own Dolphin'
+    }
+  };
+  let lang = (navigator.language || 'es').slice(0, 2); if (!S[lang]) lang = 'es';
+  const t = (k, ...a) => { const v = k.split('.').reduce((o, x) => o && o[x], S[lang]); return String(v == null ? k : v).replace(/\{(\d)\}/g, (_, i) => a[i]); };
+
+  // ------------------------------------------------------------ estado
+  const V = ['lang', 'legal', 'files', 'dest', 'run', 'done', 'fail'];
+  let view = 'lang', st = { platform: 'win32', defaultDir: '', dolphins: [] };
+  const sel = { eu: '', euId: null, dolphin: '', tool: '', toolOk: false, dir: '' };
+  const isLinux = () => st.platform === 'linux';
+  const show = (v) => {
+    view = v;
+    document.querySelectorAll('.view').forEach((el) => el.classList.toggle('on', el.dataset.v === v));
+    paintSteps();
+  };
+  const paintSteps = () => {
+    const i = Math.min(4, V.indexOf(view));
+    $('steps').innerHTML = t('steps').split ? '' : '';
+    $('steps').innerHTML = S[lang].steps.map((s, k) => '<span class="dot' + (k === i ? ' on' : k < i ? ' done' : '') + '">' + s + '</span>').join('');
+  };
+  const applyLang = () => {
+    document.documentElement.lang = lang;
+    document.querySelectorAll('[data-t]').forEach((el) => { el.textContent = t(el.dataset.t); });
+    $('legalTxt').innerHTML = S[lang].legal;
+    $('tSub').textContent = t('sub');
+    $('pfNote').textContent = isLinux() ? t('pfLin') : t('pfWin');
+    document.querySelectorAll('.lang').forEach((b) => b.classList.toggle('on', b.dataset.l === lang));
+    paintFields(); paintSteps(); $('destPath').textContent = sel.dir;
+  };
+
+  // ------------------------------------------------------------ archivos
+  const paintFields = () => {
+    const rows = [['eu', t('fUS'), t('fUSs')]];
+    if (isLinux()) rows.push(['dolphin', t('fDol'), t('fDols')], ['tool', t('fTool'), t('fTools')]);
+    $('fields').innerHTML = rows.map(([k, l, s]) => {
+      const p = sel[k];
+      let state = '', cls = 'wait';
+      if (k === 'eu') {
+        const id = sel[k + 'Id'];
+        if (p && id === undefined) state = t('checking');
+        else if (p && id) { const ok = id === 'R2GP99'; cls = ok ? 'ok' : 'bad'; state = ok ? t('okId', id) : t('badId', id); }
+        else if (p && id === null) { cls = 'bad'; state = isLinux() && !sel.toolOk ? t('noTool') : t('badId', '?'); }
+      } else if (k === 'dolphin') { state = sel.dolphin ? '' : t('dolNone'); cls = sel.dolphin ? 'ok' : 'bad'; }
+      else if (k === 'tool') { if (sel.tool) { cls = sel.toolOk ? 'ok' : 'bad'; state = sel.toolOk ? t('toolOk') : t('toolBad'); } }
+      const shown = p && p.startsWith('flatpak:') ? 'Flatpak · ' + p.slice(8) : p;
+      return '<div class="field"><span class="lbl">' + l + '<small>' + s + '</small></span><div class="path' + (p ? '' : ' empty') + '">' + (shown || t('none')) +
+        '</div><button class="btn" data-pick="' + k + '">' + t('browse') + '</button>' + (state ? '<div class="state ' + cls + '">' + state + '</div>' : '') + '</div>';
+    }).join('');
+    document.querySelectorAll('[data-pick]').forEach((b) => b.addEventListener('click', () => { play('ok'); send('pick', { kind: b.dataset.pick }); }));
+    const ok = sel.euId === 'R2GP99' && (!isLinux() || (sel.dolphin && sel.toolOk));
+    $('filesNext').disabled = !ok;
+  };
+  const check = (k) => { if (!sel[k]) return; sel[k + 'Id'] = undefined; paintFields(); send('check', { kind: k, path: sel[k], tool: sel.tool }); };
+
+  // ------------------------------------------------------------ navegación
+  document.querySelectorAll('.lang').forEach((b) => b.addEventListener('click', () => { lang = b.dataset.l; play('move'); applyLang(); }));
+  document.querySelectorAll('[data-next]').forEach((b) => b.addEventListener('click', () => { play('ok'); show(V[V.indexOf(view) + 1]); }));
+  document.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => { play('back'); show(V[V.indexOf(view) - 1]); }));
+  $('accept').addEventListener('change', (e) => { $('legalNext').disabled = !e.target.checked; play('move'); });
+  $('destPick').addEventListener('click', () => { play('ok'); send('pick', { kind: 'dir', current: sel.dir }); });
+  $('goInstall').addEventListener('click', () => {
+    play('start'); show('run'); $('logBox').textContent = '';
+    send('install', { opts: { lang, eu: sel.eu, dir: sel.dir, dolphin: sel.dolphin, tool: sel.tool, desktop: $('optDesk').checked, menu: $('optMenu').checked } });
+  });
+  $('launchNow').addEventListener('click', () => { play('start'); send('launch'); });
+  $('openFolder').addEventListener('click', () => send('openFolder'));
+  $('failBack').addEventListener('click', () => { play('back'); show('files'); });
+  $('failClose').addEventListener('click', () => send('close'));
+  $('bMin').addEventListener('click', () => send('minimize'));
+  $('bClose').addEventListener('click', () => send('close'));
+
+  // ------------------------------------------------------------ mensajes
+  const errText = (msg) => {
+    const [k, a, b] = String(msg || '').split(':');
+    if (k === 'id') return t('e.id', t(a), b); if (k === 'verify') return t('e.verify', t(a)); if (k === 'space') return t('e.space', a);
+    if (k === 'extract') return t('e.extract', String(msg).slice(8)); if (k === 'patch') return t('e.patch'); if (k === 'payload') return t('e.payload');
+    return msg;
+  };
+  if (host) host.addEventListener('message', (ev) => {
+    let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+    const d = m.data;
+    if (m.type === 'state') {
+      st = d; sel.dir = d.defaultDir;
+      if (isLinux() && d.dolphins && d.dolphins[0]) { sel.dolphin = d.dolphins[0].path; sel.tool = d.dolphins[0].tool || ''; if (sel.tool) send('checkTool', { tool: sel.tool }); }
+      applyLang();
+    } else if (m.type === 'picked') {
+      if (d.kind === 'dir') { sel.dir = d.path.replace(/[\\/]$/, '') + (/(Fragile Dreams)$/i.test(d.path) ? '' : (isLinux() ? '/' : '\\') + DIRNAME); $('destPath').textContent = sel.dir; }
+      else if (d.kind === 'eu') { sel.eu = d.path; check('eu'); }
+      else if (d.kind === 'dolphin') {
+        sel.dolphin = d.path;
+        if (!sel.tool) { const guess = d.path.replace(/dolphin-emu[^/]*$/i, 'dolphin-tool'); if (guess !== d.path) { sel.tool = guess; send('checkTool', { tool: sel.tool }); } }
+        paintFields();
+      } else if (d.kind === 'tool') { sel.tool = d.path; sel.toolOk = false; paintFields(); send('checkTool', { tool: sel.tool }); }
+    } else if (m.type === 'checked') { if (sel[d.kind] === d.path) { sel[d.kind + 'Id'] = d.id || null; paintFields(); } }
+    else if (m.type === 'toolChecked') { sel.toolOk = !!d.ok; paintFields(); if (sel.toolOk && sel.eu) check('eu'); }
+    else if (m.type === 'prog') { $('stepTxt').textContent = t('st.' + d.key); $('barFill').style.width = d.pct + '%'; $('pct').textContent = Math.round(d.pct) + '%'; }
+    else if (m.type === 'log') { const b = $('logBox'); b.textContent += d + '\n'; b.scrollTop = b.scrollHeight; }
+    else if (m.type === 'done') {
+      play('start'); show('done');
+      let n = 5; $('countdown').textContent = t('countdown', n);
+      const iv = setInterval(() => { n--; $('countdown').textContent = t('countdown', n); if (n <= 0) { clearInterval(iv); send('launch'); } }, 1000);
+    } else if (m.type === 'fail') { play('back'); $('failTxt').textContent = errText(d.error); show('fail'); }
+  });
+  applyLang();
+  if (host) send('init');
+})();
+</script>
+</body>
+</html>

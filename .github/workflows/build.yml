@@ -1,0 +1,176 @@
+# Compila los instaladores de Windows y Linux y los publica en Releases.
+# Se ejecuta al cambiar el archivo VERSION en main, al crear una etiqueta v*, o a mano (Actions → Run workflow).
+# Nunca incluye el juego: los instaladores piden la copia original (europea, R2GP99) del usuario.
+name: Instaladores
+
+on:
+  push:
+    branches: [main]
+    paths: [VERSION]
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  ELECTRON: '44.5.1'
+  DOLPHIN: '2609a'
+  RCEDIT: 'v2.0.0'
+
+jobs:
+  nativos:
+    name: Piezas nativas (Linux + motor)
+    runs-on: ubuntu-22.04          # glibc 2.35: los binarios funcionan en Ubuntu 22.04 / Debian 12 / Mint 21 o más nuevos
+    steps:
+      - uses: actions/checkout@v4
+      - name: fd_logros y pt_bridge (Linux)
+        run: bash herramientas/build_linux.sh out/linux
+      - name: Motor (fd_motor.exe) con MinGW-w64
+        continue-on-error: true
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q gcc-mingw-w64-x86-64 binutils-mingw-w64-x86-64
+          bash motor/build_mingw.sh
+          mkdir -p out/motor && cp motor/fd_motor.exe out/motor/
+      - uses: actions/upload-artifact@v4
+        with: { name: nativos, path: out }
+
+  windows:
+    name: Instalador de Windows
+    needs: nativos
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: nativos, path: nativos }
+      - name: Armar instalador
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'; $ProgressPreference = 'SilentlyContinue'
+          $v = (Get-Content VERSION -Raw).Trim()
+          $W = "dist\Fragile Dreams - Instalador Windows"
+          $tmp = "dist\_tmp"; New-Item -ItemType Directory -Force $W, $tmp | Out-Null
+          # Electron (motor del instalador y del launcher)
+          Invoke-WebRequest "https://github.com/electron/electron/releases/download/v$env:ELECTRON/electron-v$env:ELECTRON-win32-x64.zip" -OutFile "$tmp\electron.zip"
+          Expand-Archive "$tmp\electron.zip" -DestinationPath $W -Force
+          Remove-Item "$W\resources\default_app.asar" -Force -ErrorAction SilentlyContinue
+          Rename-Item "$W\electron.exe" 'Instalar Fragile Dreams.exe'
+          Invoke-WebRequest "https://github.com/electron/rcedit/releases/download/$env:RCEDIT/rcedit-x64.exe" -OutFile "$tmp\rcedit.exe"
+          & "$tmp\rcedit.exe" "$W\Instalar Fragile Dreams.exe" --set-icon launcher\ui\assets\icon.ico `
+            --set-version-string ProductName 'Fragile Dreams' --set-version-string FileDescription "Fragile Dreams - Dionixu's Launcher" `
+            --set-version-string CompanyName 'Dionixu' --set-version-string OriginalFilename 'FragileDreams.exe' --set-version-string InternalName 'FragileDreams' `
+            --set-file-version $v --set-product-version $v
+          if ($LASTEXITCODE) { throw 'rcedit' }
+          # app del instalador
+          Copy-Item instalador\app "$W\resources\app" -Recurse
+          # payload: launcher, traduccion, motor, core de Dolphin, Dolphin portable, Steam
+          $P = "$W\payload"
+          New-Item -ItemType Directory -Force "$P\launcher\app", "$P\motor", "$P\core" | Out-Null
+          Copy-Item launcher\resources\app\* "$P\launcher\app\"
+          Copy-Item launcher\ui "$P\launcher\ui" -Recurse
+          Copy-Item launcher\data "$P\launcher\data" -Recurse
+          Copy-Item parche_es "$P\parche_es" -Recurse
+          Remove-Item "$P\parche_es\LEEME_parche_castellano_1.1.txt" -ErrorAction SilentlyContinue
+          if (Test-Path nativos\motor\fd_motor.exe) { Copy-Item nativos\motor\fd_motor.exe "$P\motor\"; Write-Host 'motor: compilado ahora' }
+          else { Copy-Item motor\bin\fd_motor.exe "$P\motor\"; Write-Host 'motor: binario del repositorio' }
+          Invoke-WebRequest 'https://buildbot.libretro.com/nightly/windows/x86_64/latest/dolphin_libretro.dll.zip' -OutFile "$tmp\core.zip"
+          Invoke-WebRequest 'https://buildbot.libretro.com/assets/system/Dolphin.zip' -OutFile "$tmp\sys.zip"
+          Expand-Archive "$tmp\core.zip" -DestinationPath "$P\core" -Force
+          Expand-Archive "$tmp\sys.zip" -DestinationPath "$P\core\system" -Force
+          if (-not (Test-Path "$P\core\dolphin_libretro.dll")) { throw 'core' }
+          Invoke-WebRequest "https://dl.dolphin-emu.org/releases/$env:DOLPHIN/dolphin-$env:DOLPHIN-x64.7z" -OutFile "$tmp\dolphin.7z"
+          7z x "$tmp\dolphin.7z" "-o$tmp\dolphin" -y | Out-Null
+          $dx = Get-ChildItem "$tmp\dolphin" -Recurse -Filter DolphinTool.exe | Select-Object -First 1
+          if (-not $dx) { throw 'DolphinTool' }
+          Copy-Item $dx.Directory.FullName "$P\dolphin" -Recurse
+          Remove-Item "$P\dolphin\User", "$P\dolphin\portable.txt" -Recurse -Force -ErrorAction SilentlyContinue
+          New-Item -ItemType Directory -Force "$P\steam" | Out-Null
+          Copy-Item steam\AGREGAR_A_STEAM.bat, steam\AGREGAR_A_STEAM.ps1 "$P\steam\"
+          Copy-Item steam\arte "$P\steam\arte" -Recurse
+          Copy-Item instalador\docs\INSTRUCCIONES_Windows.txt "$W\INSTRUCCIONES - INSTRUCTIONS.txt"
+          Remove-Item $tmp -Recurse -Force
+          $zip = "dist\Fragile_Dreams_Instalador_Windows_v$v.zip"
+          7z a -tzip -mx=7 $zip ".\$W" | Out-Null
+          Get-Item $zip | ForEach-Object { '{0}  {1:N1} MB' -f $_.Name, ($_.Length / 1MB) }
+      - uses: actions/upload-artifact@v4
+        with: { name: windows, path: 'dist/*.zip' }
+
+  linux:
+    name: AppImage de Linux
+    needs: nativos
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { name: nativos, path: nativos }
+      - uses: actions/setup-node@v4
+        with: { node-version: '22' }
+      - name: Armar AppImage
+        run: |
+          set -e
+          v=$(tr -d ' \r\n' < VERSION)
+          mkdir -p dist work
+          curl -sSL -o work/electron.zip "https://github.com/electron/electron/releases/download/v$ELECTRON/electron-v$ELECTRON-linux-x64.zip"
+          unzip -q work/electron.zip -d work/electron
+          mkdir -p work/app
+          cp launcher/resources/app/main.js launcher/resources/app/preload.js launcher/resources/app/package.json work/app/
+          cp nativos/linux/fd_logros nativos/linux/pt_bridge work/app/
+          chmod +x work/app/fd_logros work/app/pt_bridge
+          OUT="dist/Instalar_Fragile_Dreams-x86_64.AppImage"
+          cat > work/spec.json <<JSON
+          {
+            "runtime": "instalador/appimage/runtime-x86_64",
+            "out": "$OUT",
+            "trees": [
+              { "src": "work/electron", "dst": "", "exclude": ["resources/default_app.asar"], "exec": ["electron", "chrome-sandbox", "chrome_crashpad_handler"] },
+              { "src": "instalador/app", "dst": "resources/app" },
+              { "src": "work/app", "dst": "payload/launcher/app", "exec": ["fd_logros", "pt_bridge"] },
+              { "src": "launcher/ui", "dst": "payload/launcher/ui" },
+              { "src": "launcher/data", "dst": "payload/launcher/data" },
+              { "src": "parche_es", "dst": "payload/parche_es", "exclude": ["LEEME_parche_castellano_1.1.txt"] }
+            ],
+            "files": [
+              { "src": "instalador/appimage/AppRun", "dst": "AppRun", "mode": 493 },
+              { "src": "instalador/appimage/fragile-dreams.desktop", "dst": "fragile-dreams.desktop" },
+              { "src": "launcher/ui/assets/icon.png", "dst": "fragile-dreams.png" },
+              { "src": "launcher/ui/assets/icon.png", "dst": ".DirIcon" }
+            ]
+          }
+          JSON
+          node instalador/build/appimage.js work/spec.json
+          chmod +x "$OUT"
+          cp instalador/docs/INSTRUCCIONES_Linux.txt "dist/INSTRUCCIONES_Linux - INSTRUCTIONS.txt"
+          (cd dist && sha256sum Instalar_Fragile_Dreams-x86_64.AppImage > SHA256_AppImage.txt)
+          ls -la dist
+      - name: Prueba rápida (el AppImage arranca)
+        run: |
+          sudo apt-get install -y -q xvfb libfuse2 > /dev/null
+          timeout 25 xvfb-run -a dist/Instalar_Fragile_Dreams-x86_64.AppImage --appimage-extract-and-run > appimage_run.log 2>&1 || true
+          tail -20 appimage_run.log
+      - uses: actions/upload-artifact@v4
+        with: { name: linux, path: 'dist/*' }
+
+  publicar:
+    name: Publicar en Releases
+    needs: [windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: dist, merge-multiple: true }
+      - name: Versión y notas
+        id: ver
+        run: |
+          v=$(tr -d ' \r\n' < VERSION)
+          echo "v=$v" >> "$GITHUB_OUTPUT"
+          f="NOTAS_RELEASE_v$v.md"; [ -f "$f" ] || f=CHANGELOG.md
+          echo "notes=$f" >> "$GITHUB_OUTPUT"
+          ls -la dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.ver.outputs.v }}
+          name: Fragile Dreams — Dionixu's Launcher v${{ steps.ver.outputs.v }}
+          body_path: ${{ steps.ver.outputs.notes }}
+          files: dist/*
+          make_latest: true

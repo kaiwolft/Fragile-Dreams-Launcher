@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Fragile Dreams (Instalador)
+Comment=Dionixu's Launcher
+Exec=AppRun
+Icon=fragile-dreams
+Categories=Game;
+Terminal=false

@@ -1,0 +1,46 @@
+FRAGILE DREAMS: FAREWELL RUINS OF THE MOON - Dionixu's Launcher (Linux, AppImage)
+=================================================================================
+
+AVISO LEGAL
+  * Este AppImage NO incluye el juego. Necesitas tu propia copia ORIGINAL de la VERSION EUROPEA (PAL, ID R2GP99),
+    extraida de tu disco. La americana y la japonesa no sirven.
+  * La traduccion al castellano 1.1 (TioVictor / Romhack Hispano) ya viene integrada.
+  * No se acepta ni se fomenta la pirateria. Proyecto de aficionados sin fines de lucro.
+
+INSTALACION EN LINUX (Debian 12, Ubuntu 22.04, Mint 21, Fedora 36 o mas nuevos; 64 bits)
+  1. Ten unos 6 GB libres y tu copia europea (.rvz, .iso, .wbfs, .wia o .gcz).
+  2. Instala TU PROPIO Dolphin (recomendado el Flatpak):
+       sudo apt install flatpak
+       flatpak remote-add --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+       flatpak install flathub org.DolphinEmu.dolphin-emu
+  3. Da permiso de ejecucion y abre el AppImage:
+       chmod +x Instalar_Fragile_Dreams-x86_64.AppImage
+       ./Instalar_Fragile_Dreams-x86_64.AppImage
+     Si no abre: sudo apt install libfuse2   o   ./Instalar_Fragile_Dreams-x86_64.AppImage --appimage-extract-and-run
+  4. Elige idioma, acepta el aviso, elige tu copia (R2GP99) y tu Dolphin, y pulsa INSTALAR (por defecto ~/Games/Fragile Dreams).
+  Diferencias con Windows: en Linux el juego corre en tu Dolphin. El motor propio de Windows (camara con stick derecho y
+  raton, 60 FPS) no esta disponible; el movimiento 360, el mando clasico, los botones de Xbox/teclado, el menu de pausa
+  y los logros si.
+  Si el mando no responde bien: abre Dolphin, configura el mando una vez y en el launcher pon Controles automaticos = No.
+  Si algo falla: envia instalacion.log (carpeta de instalacion) o launcher/data/launcher.log.
+
+------------------------------------------------------------------------------
+
+LEGAL NOTICE
+  * This AppImage does NOT include the game. You need your own ORIGINAL copy of the EUROPEAN VERSION (PAL, ID R2GP99),
+    dumped from your disc. The US and Japanese versions will not work.
+  * The Spanish fan translation 1.1 is built in (English / French / German text stays available).
+  * Piracy is not accepted or encouraged. Non-profit fan project.
+
+INSTALLING ON LINUX (Debian 12, Ubuntu 22.04, Mint 21, Fedora 36 or newer; 64-bit)
+  1. Have about 6 GB free and your European copy (.rvz, .iso, .wbfs, .wia or .gcz).
+  2. Install YOUR OWN Dolphin (the Flatpak is recommended):
+       flatpak install flathub org.DolphinEmu.dolphin-emu
+  3. Make the AppImage executable and open it:
+       chmod +x Instalar_Fragile_Dreams-x86_64.AppImage
+       ./Instalar_Fragile_Dreams-x86_64.AppImage
+     If it does not open: sudo apt install libfuse2   or   run it with --appimage-extract-and-run
+  4. Pick the language, accept the notice, choose your copy (R2GP99) and your Dolphin, then INSTALL (default ~/Games/Fragile Dreams).
+  Linux differences: the game runs in your Dolphin. The Windows-only engine (right-stick/mouse camera, 60 FPS) is not
+  available; 360 movement, classic controller, Xbox/keyboard button prompts, pause menu and achievements are.
+  If something fails: send instalacion.log (install folder) or launcher/data/launcher.log.

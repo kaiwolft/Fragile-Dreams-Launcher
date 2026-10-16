@@ -1,0 +1,1075 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Fragile Dreams</title>
+<style>
+@font-face{font-family:"FD Cinzel";src:url(fonts/Cinzel.ttf) format("truetype");font-weight:400 900}
+@font-face{font-family:"FD Cormorant";src:url(fonts/CormorantGaramond.ttf) format("truetype");font-weight:300 700}
+@font-face{font-family:"FD Cormorant";src:url(fonts/CormorantGaramond-Italic.ttf) format("truetype");font-weight:300 700;font-style:italic}
+:root{
+  --night:#050a18; --deep:#0a1630; --ink:#e8f0fb; --mute:#8fa3c0; --dim:#5d6f8c;
+  --glow:#8fd2ff; --glow-2:#4aa8ff; --lilac:#c9b2ff; --line:rgba(160,205,255,.28);
+  --glass:rgba(8,18,40,.72); --glass-2:rgba(14,30,62,.55);
+  --display:"FD Cinzel","Cinzel",Georgia,serif; --body:"FD Cormorant","Cormorant Garamond",Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:var(--night);color:var(--ink);font-family:var(--body);user-select:none}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+#wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:#02050d}
+#stage{position:relative;width:1280px;height:720px;flex:none;overflow:hidden;transform-origin:center center;background:var(--night)}
+#dragbar{position:fixed;left:0;right:0;top:0;height:30px;-webkit-app-region:drag;z-index:50}
+body.full #dragbar{display:none}
+
+/* ── fondo ───────────────────────────── */
+#bg{position:absolute;left:0;top:0;width:1334px;height:751px;background:url(assets/bg.jpg) left top/100% 100% no-repeat;transform-origin:0 0;opacity:0;transition:opacity 1.6s ease}
+body.ready #bg{opacity:1}
+#bg canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+body.anim #bg{animation:drift 38s ease-in-out infinite alternate}
+@keyframes drift{from{transform:scale(1) translate(0,0)}to{transform:scale(1.03) translate(0,-8px)}}
+#shimmer{position:absolute;inset:0;pointer-events:none;mix-blend-mode:screen;opacity:.0;transition:opacity 2s ease;
+  background:radial-gradient(ellipse 22% 9% at 74% 47%,rgba(150,215,255,.20),transparent 70%),
+             radial-gradient(ellipse 18% 6% at 90% 58%,rgba(150,215,255,.16),transparent 70%),
+             radial-gradient(ellipse 14% 5% at 60% 66%,rgba(190,170,255,.12),transparent 70%)}
+body.ready.anim #shimmer{opacity:1;animation:shim 6s ease-in-out infinite alternate}
+@keyframes shim{from{filter:brightness(.7);transform:translateX(-6px)}to{filter:brightness(1.25);transform:translateX(8px)}}
+#shade{position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 52% 62% at 10% 80%,rgba(3,8,20,.9) 0%,rgba(3,8,20,.62) 50%,rgba(3,8,20,0) 100%),
+             linear-gradient(0deg,rgba(2,6,16,.85) 0%,rgba(2,6,16,0) 16%)}
+body.inpanel #shade{background:radial-gradient(ellipse 52% 62% at 10% 80%,rgba(3,8,20,.9) 0%,rgba(3,8,20,.62) 50%,rgba(3,8,20,0) 100%),
+             linear-gradient(90deg,rgba(3,8,20,0) 40%,rgba(3,8,20,.55) 60%),linear-gradient(0deg,rgba(2,6,16,.85) 0%,rgba(2,6,16,0) 16%)}
+#shade{transition:background .5s ease}
+#fx{position:absolute;inset:0;pointer-events:none}
+#logoGlow{position:absolute;left:30px;top:70px;width:520px;height:290px;pointer-events:none;mix-blend-mode:screen;opacity:0;
+  background:radial-gradient(ellipse 50% 45% at 50% 48%,rgba(140,205,255,.20),transparent 70%)}
+body.ready.anim #logoGlow{animation:breathe 5.5s ease-in-out infinite}
+@keyframes breathe{0%,100%{opacity:.25}50%{opacity:.85}}
+
+/* ── barra superior ─────────────────── */
+#top{position:absolute;right:16px;top:12px;display:flex;gap:6px;z-index:60}
+body.full #top{display:none}
+.iconbtn{width:36px;height:36px;display:grid;place-items:center;color:var(--mute);border:1px solid transparent;border-radius:50%;transition:all .2s;-webkit-app-region:no-drag}
+.iconbtn.sel{transform:scale(1.12)}
+.iconbtn:hover,.iconbtn.sel{color:var(--ink);border-color:var(--line);background:rgba(120,180,255,.08);box-shadow:0 0 14px rgba(120,190,255,.25)}
+.iconbtn.off{opacity:.45}
+
+/* ── menú principal ─────────────────── */
+#menu{position:absolute;left:46px;top:312px;width:470px}
+.mi{position:relative;display:flex;align-items:center;height:52px;padding-left:124px;opacity:0;transform:translateX(-16px)}
+body.ready .mi{opacity:1;transform:none;transition:opacity .7s ease,transform .7s cubic-bezier(.2,.8,.2,1)}
+.mi .lbl{font-family:var(--display);font-size:20px;letter-spacing:6px;color:var(--ink);text-shadow:0 0 18px rgba(120,180,255,.25);transition:all .25s}
+.mi .orn{position:absolute;left:40px;top:50%;width:70px;height:12px;transform:translateY(-50%);transition:opacity .25s}
+.mi .band{position:absolute;left:0;right:0;top:4px;bottom:4px;opacity:0;transition:opacity .3s ease;pointer-events:none}
+.mi .band::before{content:"";position:absolute;left:30px;right:6px;top:0;bottom:0;border-radius:60% 10px 10px 60%/50% 10px 10px 50%;
+  background:linear-gradient(90deg,rgba(40,120,220,.0) 0%,rgba(40,130,230,.42) 18%,rgba(25,90,190,.30) 70%,rgba(20,70,160,0) 100%);
+  border-top:1px solid rgba(160,220,255,.55);border-bottom:1px solid rgba(160,220,255,.75);box-shadow:0 0 24px rgba(80,170,255,.35),inset 0 0 30px rgba(120,200,255,.18)}
+.mi .band::after{content:"";position:absolute;left:30px;right:6px;top:0;bottom:0;border-radius:inherit;
+  background:linear-gradient(100deg,transparent 35%,rgba(200,235,255,.28) 50%,transparent 65%);background-size:260% 100%;animation:sheen 3.2s ease-in-out infinite}
+@keyframes sheen{from{background-position:130% 0}to{background-position:-130% 0}}
+.mi .lotus{position:absolute;left:40px;top:50%;width:62px;height:auto;transform:translateY(-52%) scale(.7);opacity:0;transition:all .35s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 8px rgba(150,215,255,.9))}
+.mi.sel .band{opacity:1}
+.mi.sel .lotus{opacity:1;transform:translateY(-52%) scale(1)}
+.mi.sel .orn{opacity:0}
+.mi.sel .lbl{color:#fff;text-shadow:0 0 14px rgba(170,225,255,.9),0 0 34px rgba(90,170,255,.6)}
+body.anim .mi.sel .lotus{animation:bob 3.4s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(-52%) scale(1)}50%{transform:translateY(-58%) scale(1.03)}}
+body.inpanel .mi:not(.sel) .lbl{color:var(--dim)}
+body.inpanel .mi.sel .band::before{background:linear-gradient(90deg,rgba(40,120,220,0) 0%,rgba(40,130,230,.22) 18%,rgba(25,90,190,.12) 70%,rgba(20,70,160,0) 100%)}
+#desc{position:absolute;left:170px;top:630px;width:440px;font-size:18px;font-style:italic;color:var(--mute);opacity:0;transition:opacity .4s}
+body.ready #desc{opacity:1}
+
+/* ── pie ───────────────────────────── */
+#foot{position:absolute;left:52px;right:52px;bottom:16px;height:34px;display:flex;align-items:center;gap:22px;font-family:var(--display);font-size:12px;letter-spacing:2.5px;color:#c9d8ec;opacity:0;transition:opacity 1s ease .4s}
+body.ready #foot{opacity:1}
+#foot::before{content:"";position:absolute;left:-12px;right:-12px;top:-6px;height:1px;background:linear-gradient(90deg,rgba(160,210,255,.0),rgba(160,210,255,.55) 12%,rgba(160,210,255,.35) 70%,rgba(160,210,255,0))}
+#foot .sep{color:var(--glow);font-size:13px}
+#foot .ok{color:var(--glow)} #foot .warn{color:#ffb4a8}
+#foot .sp{flex:1}
+#foot .time{color:var(--mute)}
+#foot .time b{color:var(--ink);font-weight:400;margin-left:8px}
+
+/* ── paneles ───────────────────────── */
+.panel{position:absolute;right:46px;top:64px;bottom:72px;width:610px;padding:26px 30px 22px;background:var(--glass);backdrop-filter:blur(14px) saturate(1.2);
+  border:1px solid var(--line);border-radius:4px;box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(10,20,40,.6),inset 0 0 60px rgba(70,140,230,.08);
+  opacity:0;transform:translateX(28px);pointer-events:none;transition:opacity .35s ease,transform .45s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column}
+.panel.on{opacity:1;transform:none;pointer-events:auto}
+.panel::before,.panel::after{content:"";position:absolute;width:26px;height:26px;border:1px solid rgba(170,220,255,.6);pointer-events:none}
+.panel::before{left:-1px;top:-1px;border-right:0;border-bottom:0}
+.panel::after{right:-1px;bottom:-1px;border-left:0;border-top:0}
+.phead{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.phead h2{margin:0;font-family:var(--display);font-weight:400;font-size:24px;letter-spacing:8px;color:#fff;text-shadow:0 0 18px rgba(120,190,255,.5)}
+.phead .sp{flex:1}
+.phead .lot{width:34px;filter:drop-shadow(0 0 6px rgba(150,215,255,.8))}
+.pbtn{height:34px;padding:0 16px;font-family:var(--display);font-size:12px;letter-spacing:3px;color:var(--ink);border:1px solid var(--line);background:rgba(120,180,255,.06);border-radius:2px;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.pbtn:hover,.pbtn.sel{border-color:rgba(170,225,255,.9);background:rgba(80,160,255,.22);box-shadow:0 0 16px rgba(90,180,255,.35)}
+.glyph{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:10px;border:1px solid rgba(200,230,255,.6);font-family:var(--display);font-size:10px;letter-spacing:0;color:#fff}
+.tabs{display:flex;align-items:center;gap:2px;margin:0 0 12px;border-bottom:1px solid var(--line);overflow:hidden}
+.tab{position:relative;flex:1 1 auto;padding:8px 6px 10px;font-family:var(--display);font-size:11.5px;letter-spacing:1.8px;color:var(--mute);transition:color .2s;white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab.on{color:#fff}
+.tab.on::after{content:"";position:absolute;left:10px;right:10px;bottom:-1px;height:2px;background:linear-gradient(90deg,transparent,var(--glow),transparent);box-shadow:0 0 10px var(--glow)}
+.tabkey{flex:none;display:inline-grid;place-items:center;min-width:26px;height:20px;padding:0 6px;margin:0 2px 4px;border-radius:10px;font-family:var(--display);font-size:9.5px;letter-spacing:.5px;color:#dcecff;background:rgba(120,180,255,.16);border:1px solid rgba(170,215,255,.35)}
+.rows{flex:1;overflow:auto;padding-right:6px;scrollbar-width:thin;scrollbar-color:rgba(140,190,255,.35) transparent}
+.rows::-webkit-scrollbar{width:6px}.rows::-webkit-scrollbar-thumb{background:rgba(140,190,255,.3);border-radius:3px}
+.grp{margin:14px 2px 6px;font-family:var(--display);font-size:11px;letter-spacing:4px;color:var(--glow);opacity:.85}
+.grp:first-child{margin-top:2px}
+.row{display:flex;align-items:center;gap:14px;min-height:50px;padding:6px 12px;border:1px solid transparent;border-radius:2px;transition:background .18s,border-color .18s;animation:rowIn .35s ease both}
+.rows.still .row{animation:none}
+@keyframes rowIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.row.sel{background:linear-gradient(90deg,rgba(70,150,240,.22),rgba(70,150,240,.06));border-color:rgba(150,210,255,.45)}
+.row .lab{flex:1;min-width:0}
+.row .lab b{display:block;font-family:var(--display);font-weight:400;font-size:14px;letter-spacing:2.2px;color:var(--ink)}
+.row .lab i{display:block;font-size:15px;color:var(--mute);margin-top:1px}
+.opts{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.opt{min-width:58px;height:30px;padding:0 10px;font-family:var(--display);font-size:11.5px;letter-spacing:1.6px;color:var(--mute);border:1px solid rgba(140,180,230,.25);border-radius:2px;transition:all .18s}
+.opt:hover{color:var(--ink);border-color:rgba(170,215,255,.6)}
+.opt.on{color:#fff;border-color:rgba(170,225,255,.9);background:linear-gradient(180deg,rgba(80,160,255,.45),rgba(40,100,200,.35));box-shadow:0 0 12px rgba(90,180,255,.35)}
+.slider{display:flex;align-items:center;gap:10px;width:250px}
+.track{position:relative;flex:1;height:8px;border:1px solid rgba(150,200,255,.35);border-radius:4px;background:rgba(120,170,230,.08);cursor:pointer}
+.fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,#2a6fd0,var(--glow))}
+.knob{position:absolute;top:50%;width:14px;height:14px;margin:-7px 0 0 -7px;transform:rotate(45deg);background:#eaf6ff;box-shadow:0 0 10px rgba(150,215,255,.9)}
+.pct{width:44px;text-align:right;font-family:var(--display);font-size:12px;color:var(--ink)}
+.bind{min-width:150px;height:32px;padding:0 12px;font-family:var(--display);font-size:11.5px;letter-spacing:1.5px;color:var(--ink);border:1px solid rgba(140,180,230,.35);border-radius:2px;background:rgba(10,20,40,.4);transition:all .18s}
+.bind:hover{border-color:rgba(170,215,255,.8)}
+.bind.live{border-color:var(--lilac);color:var(--lilac);box-shadow:0 0 14px rgba(200,170,255,.45);animation:pulse 1s ease-in-out infinite}
+.bind.none{color:var(--dim)}
+@keyframes pulse{50%{opacity:.55}}
+.info{max-width:330px;text-align:right;font-size:16px;color:var(--mute)}
+.pnote{margin-top:10px;font-size:15px;font-style:italic;color:var(--mute);text-align:center}
+.big{align-self:center;margin-top:16px;min-width:300px;height:56px;font-family:var(--display);font-size:20px;letter-spacing:8px;color:#fff;border:1px solid rgba(170,225,255,.7);border-radius:2px;
+  background:linear-gradient(180deg,rgba(60,140,240,.5),rgba(25,70,170,.45));box-shadow:0 0 22px rgba(80,170,255,.35);position:relative;overflow:hidden;transition:all .2s}
+.big::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 35%,rgba(220,240,255,.35) 50%,transparent 65%);background-size:260% 100%;animation:sheen 2.6s ease-in-out infinite}
+.big:hover,.big.sel{box-shadow:0 0 0 1px rgba(200,235,255,.9),0 0 34px rgba(110,190,255,.6);transform:translateY(-1px)}
+#playSum{margin:12px 0 0;padding:14px 18px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);background:linear-gradient(90deg,rgba(60,130,230,.08),rgba(60,130,230,0))}
+#playSum h4{margin:0 0 8px;font-family:var(--display);font-weight:400;font-size:11px;letter-spacing:4px;color:var(--glow)}
+#playSum ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:1fr auto;gap:5px 14px;font-size:17px;color:#d6e2f3}
+#playSum li{display:contents}
+#playSum li span:last-child{font-family:var(--display);font-size:12px;letter-spacing:2px;color:#fff;text-align:right}
+.warnbox{margin:8px 0 0;padding:10px 14px;border:1px solid rgba(255,170,160,.45);background:rgba(120,30,30,.25);font-size:16px;color:#ffd2cb}
+.kv{display:grid;grid-template-columns:1fr auto;gap:8px 18px;font-size:17px}
+.kv span:nth-child(odd){color:var(--mute)} .kv span:nth-child(even){font-family:var(--display);font-size:13px;letter-spacing:1.5px;color:var(--ink);text-align:right}
+.tips{margin:0;padding:0 0 0 18px;font-size:17.5px;line-height:1.45;color:#d6e2f3}
+.tips li{margin:0 0 9px}
+.tips b{font-weight:600;color:#fff}
+.credits{text-align:center}
+.credits h3{margin:18px 0 4px;font-family:var(--display);font-weight:400;font-size:13px;letter-spacing:4px;color:var(--glow)}
+.credits p{margin:2px 0;font-size:18px;color:#d6e2f3}
+.stat{display:flex;align-items:baseline;justify-content:center;gap:12px;margin:6px 0 18px}
+.stat b{font-family:var(--display);font-weight:400;font-size:44px;letter-spacing:4px;color:#fff;text-shadow:0 0 22px rgba(120,190,255,.55)}
+.stat i{font-size:18px;color:var(--mute)}
+
+/* ── logros ───────────────────────── */
+.achtop{display:flex;align-items:center;gap:18px;margin:0 0 12px}
+.achtop .num{font-family:var(--display);font-size:30px;letter-spacing:2px;color:#fff;text-shadow:0 0 16px rgba(120,190,255,.5)}
+.achtop .num small{font-size:13px;letter-spacing:2px;color:var(--mute);margin-left:6px}
+.achtop .pts{font-family:var(--display);font-size:12px;letter-spacing:2px;color:var(--glow)}
+.achbar{flex:1;height:6px;border-radius:3px;background:rgba(120,170,230,.12);overflow:hidden}
+.achbar i{display:block;height:100%;background:linear-gradient(90deg,#2a6fd0,var(--glow));box-shadow:0 0 10px var(--glow)}
+.agrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.ach{display:flex;gap:12px;align-items:center;padding:8px;border:1px solid rgba(140,180,230,.18);border-radius:2px;background:rgba(10,20,40,.35);min-height:74px;transition:all .18s}
+.ach.sel{border-color:rgba(170,225,255,.85);background:rgba(70,150,240,.2);box-shadow:0 0 14px rgba(90,180,255,.25)}
+.ach img,.ach .ph{flex:none;width:56px;height:56px;border:1px solid rgba(160,205,255,.35);background:#06102a}
+.ach.lock img{opacity:.75;filter:saturate(.3)}
+.ach .ph{display:grid;place-items:center;font-family:var(--display);color:var(--dim)}
+.ach .tx{min-width:0;flex:1}
+.ach b{display:block;font-family:var(--display);font-weight:400;font-size:12.5px;letter-spacing:1.2px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ach.lock b{color:#a9b9d0}
+.ach i{display:block;font-size:14.5px;line-height:1.15;color:var(--mute);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.ach .pt{flex:none;align-self:flex-start;font-family:var(--display);font-size:11px;color:var(--glow)}
+.ach .ok{color:#9ff0c8}
+.raform{display:flex;flex-direction:column;gap:12px;margin-top:6px}
+.raform p{margin:0;font-size:17.5px;line-height:1.4;color:#d6e2f3}
+.raform input{height:40px;padding:0 14px;font:inherit;font-size:18px;color:#fff;background:rgba(6,14,32,.7);border:1px solid rgba(150,200,255,.4);border-radius:2px;outline:none}
+.raform input:focus{border-color:rgba(190,230,255,.95);box-shadow:0 0 12px rgba(110,190,255,.45)}
+.raform .msg{min-height:22px;font-size:16px;font-style:italic;color:var(--glow)}
+.raform .msg.err{color:#ffb4a8}
+.credits.roll{padding:10px 0 40px}
+/* ── lanzamiento ───────────────────── */
+#launch{position:absolute;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  background:radial-gradient(ellipse at center,rgba(6,14,34,.96),rgba(1,3,10,1));opacity:0;pointer-events:none;transition:opacity 1.1s cubic-bezier(.45,0,.25,1)}
+#launch.show{opacity:1;pointer-events:auto}
+#launch.now,#veil.now{transition:none!important}
+#launchT,#launchS{transition:opacity .9s ease .35s,transform 1.2s cubic-bezier(.2,.8,.2,1) .35s;opacity:0;transform:translateY(8px)}
+#launch.show #launchT,#launch.show #launchS{opacity:1;transform:none}
+#launchS{transition-delay:.6s}
+/* fundido a negro entre el launcher y el juego (en los dos sentidos) */
+#veil{position:fixed;inset:0;z-index:90;background:#000;opacity:0;pointer-events:none;transition:opacity .8s cubic-bezier(.45,0,.55,1)}
+#veil.on{opacity:1;pointer-events:auto}
+#veil.slow{transition-duration:1.1s}
+#moon{position:relative;width:190px;height:190px}
+#moon svg{position:absolute;inset:0}
+#moon .disc{position:absolute;inset:28px;border-radius:50%;background:radial-gradient(circle at 38% 36%,#f4f9ff,#bcd6f2 55%,#7ea2cc);box-shadow:0 0 60px 14px rgba(150,205,255,.45)}
+#moon .shadow{position:absolute;inset:28px;border-radius:50%;overflow:hidden}
+#moon .shadow i{position:absolute;inset:0;border-radius:50%;background:#030817;transform:translateX(0);transition:transform 2.6s cubic-bezier(.4,0,.2,1)}
+#launch.show #moon .shadow i{transform:translateX(105%)}
+#launchT{font-family:var(--display);font-size:22px;letter-spacing:8px;color:#fff;text-shadow:0 0 18px rgba(120,190,255,.6)}
+#launchS{font-size:19px;font-style:italic;color:var(--mute);min-height:24px}
+
+/* ── diálogo / aviso ───────────────── */
+#dim{position:absolute;inset:0;z-index:35;background:rgba(1,4,12,.6);opacity:0;pointer-events:none;transition:opacity .25s}
+#dlg{position:absolute;left:50%;top:50%;z-index:36;width:460px;padding:26px 30px;transform:translate(-50%,-46%);opacity:0;pointer-events:none;transition:all .3s cubic-bezier(.2,.8,.2,1);
+  background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--line);text-align:center;box-shadow:0 30px 80px rgba(0,0,0,.6)}
+body.dlg #dim{opacity:1;pointer-events:auto} body.dlg #dlg{opacity:1;transform:translate(-50%,-50%);pointer-events:auto}
+#dlg h3{margin:0 0 8px;font-family:var(--display);font-weight:400;font-size:20px;letter-spacing:6px}
+#dlg p{margin:0 0 20px;font-size:18px;font-style:italic;color:var(--mute)}
+#dlg .btns{display:flex;gap:14px;justify-content:center}
+#dlg .pbtn{min-width:130px;justify-content:center;height:40px}
+#toast{position:absolute;left:50%;top:20px;z-index:40;transform:translate(-50%,-10px);padding:9px 24px;background:var(--glass);border:1px solid var(--line);font-size:18px;opacity:0;transition:all .3s;pointer-events:none}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+#fade{position:absolute;inset:0;z-index:70;background:#000;opacity:0;pointer-events:none;transition:opacity .9s ease-in}
+body.closing #fade{opacity:1;pointer-events:auto}
+body.infoot .mi.sel .band,body.infoot .mi.sel .lotus{opacity:.25}
+#intro{position:absolute;inset:0;z-index:45;background:#000;display:grid;place-items:center;transition:opacity 1.2s ease}
+#intro.gone{opacity:0;pointer-events:none}
+#intro p{font-family:var(--display);font-size:15px;letter-spacing:10px;color:#9fc6ee;opacity:0;animation:introTxt 3s ease forwards .4s}
+@keyframes introTxt{0%{opacity:0;letter-spacing:4px}40%{opacity:1}100%{opacity:0;letter-spacing:14px}}
+/* cursor propio: luz de luciérnaga (como el puntero del juego) */
+html,body,#stage{cursor:-webkit-image-set(url(assets/cursor.png) 1x,url(assets/cursor@2x.png) 2x) 16 16,default}
+button,.mi,.tab,.opt,.track,.bind,.pbtn,.iconbtn,.big,.item,[data-back]{cursor:-webkit-image-set(url(assets/cursor_on.png) 1x,url(assets/cursor_on@2x.png) 2x) 16 16,pointer}
+body.nocur,body.nocur *{cursor:none!important}
+</style>
+</head>
+<body class="anim">
+<div id="dragbar"></div>
+<div id="wrap"><div id="stage">
+  <div id="bg"><canvas id="bgGL" width="1672" height="941"></canvas></div>
+  <div id="shimmer"></div>
+  <div id="shade"></div>
+  <div id="logoGlow"></div>
+  <canvas id="fx" width="1280" height="720"></canvas>
+
+  <div id="top">
+    <button class="iconbtn" id="bMin" title=""><svg width="14" height="14" viewBox="0 0 14 14"><path d="M2 7.5h10" stroke="currentColor" stroke-width="1.5"/></svg></button>
+    <button class="iconbtn" id="bClose" title=""><svg width="14" height="14" viewBox="0 0 14 14"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.5"/></svg></button>
+  </div>
+
+  <div id="menu"></div>
+  <div id="desc"></div>
+
+  <section class="panel" id="pPlay">
+    <div class="phead"><img class="lot" src="assets/lotus.png" alt=""><h2 data-t="play"></h2><span class="sp"></span><button class="pbtn" data-back><span class="glyph" data-g="b">B</span><span data-t="back"></span></button></div>
+    <div class="rows" id="playRows"></div>
+    <div id="playSum"></div>
+    <div id="playWarn"></div>
+    <button class="big" id="bStart"></button>
+    <div class="pnote" id="playNote"></div>
+  </section>
+
+  <section class="panel" id="pSettings">
+    <div class="phead"><img class="lot" src="assets/lotus.png" alt=""><h2 data-t="settings"></h2><span class="sp"></span><button class="pbtn" data-back><span class="glyph" data-g="b">B</span><span data-t="back"></span></button></div>
+    <div class="tabs" id="tabs"></div>
+    <div class="rows" id="rows"></div>
+    <div class="pnote" id="pnote"></div>
+  </section>
+
+  <section class="panel" id="pAch">
+    <div class="phead"><img class="lot" src="assets/lotus.png" alt=""><h2 data-t="ach"></h2><span class="sp"></span><button class="pbtn" data-back><span class="glyph" data-g="b">B</span><span data-t="back"></span></button></div>
+    <div class="rows" id="achBody"></div>
+  </section>
+
+  <section class="panel" id="pCredits">
+    <div class="phead"><img class="lot" src="assets/lotus.png" alt=""><h2 data-t="credits"></h2><span class="sp"></span><button class="pbtn" data-back><span class="glyph" data-g="b">B</span><span data-t="back"></span></button></div>
+    <div class="rows" id="credBody"></div>
+  </section>
+
+  <section class="panel" id="pExtras">
+    <div class="phead"><img class="lot" src="assets/lotus.png" alt=""><h2 data-t="extras"></h2><span class="sp"></span><button class="pbtn" data-back><span class="glyph" data-g="b">B</span><span data-t="back"></span></button></div>
+    <div class="tabs" id="xtabs"></div>
+    <div class="rows" id="xrows"></div>
+  </section>
+
+  <div id="foot">
+    <span id="fVer">Versión 1.0</span><span class="sep">✦</span><span id="fDev"></span>
+    <span class="sp"></span>
+    <span class="time"><span data-t="playtime"></span><b id="playtime">00:00:00</b></span>
+    <button class="iconbtn" id="bMusic"><svg width="18" height="18" viewBox="0 0 20 20"><path d="M8 15.5V4l9-2v11.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="5.6" cy="15.5" r="2.4" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="14.6" cy="13.5" r="2.4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+    <button class="iconbtn" id="bFull"><svg width="18" height="18" viewBox="0 0 20 20"><path d="M3 7V3h4M13 3h4v4M17 13v4h-4M7 17H3v-4" fill="none" stroke="currentColor" stroke-width="1.5"/></svg></button>
+    <button class="iconbtn" id="bGear"><svg width="19" height="19" viewBox="0 0 24 24"><path d="M12 15.2a3.2 3.2 0 1 0 0-6.4 3.2 3.2 0 0 0 0 6.4z" fill="none" stroke="currentColor" stroke-width="1.4"/><path d="M19.4 13.5a7.7 7.7 0 0 0 0-3l2-1.5-2-3.4-2.3.9a7.6 7.6 0 0 0-2.6-1.5L14.1 2.5h-4.2l-.4 2.5a7.6 7.6 0 0 0-2.6 1.5l-2.3-.9-2 3.4 2 1.5a7.7 7.7 0 0 0 0 3l-2 1.5 2 3.4 2.3-.9a7.6 7.6 0 0 0 2.6 1.5l.4 2.5h4.2l.4-2.5a7.6 7.6 0 0 0 2.6-1.5l2.3.9 2-3.4z" fill="none" stroke="currentColor" stroke-width="1.4"/></svg></button>
+  </div>
+
+  <div id="veil"></div>
+  <div id="launch">
+    <div id="moon">
+      <svg viewBox="0 0 190 190"><circle cx="95" cy="95" r="88" fill="none" stroke="rgba(160,210,255,.25)" stroke-width="1"/><circle cx="95" cy="95" r="80" fill="none" stroke="rgba(160,210,255,.15)" stroke-width="1" stroke-dasharray="2 6"/></svg>
+      <div class="disc"></div><div class="shadow"><i></i></div>
+    </div>
+    <div id="launchT"></div>
+    <div id="launchS"></div>
+  </div>
+
+  <div id="dim"></div>
+  <div id="dlg"><h3 id="dlgT"></h3><p id="dlgP"></p><div class="btns"><button class="pbtn" id="dlgNo"></button><button class="pbtn" id="dlgYes"></button></div></div>
+  <div id="toast"></div>
+  <div id="intro"><p>FRAGILE DREAMS</p></div>
+  <div id="fade"></div>
+</div></div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = (s) => document.querySelector(s);
+  const host = window.fdHost || null;
+  const post = (cmd, extra) => { if (host) host.postMessage(JSON.stringify(Object.assign({ cmd }, extra || {}))); };
+  const stage = $('#stage');
+  const fitStage = () => { const k = Math.min(innerWidth / 1280, innerHeight / 720); stage.style.transform = 'scale(' + k + ')'; };
+  addEventListener('resize', fitStage); fitStage();
+
+  /* ───── configuración ───── */
+  const DEF = { music: 'on', mvol: 45, sfx: 'on', gvol: '100', res: '1080', mode: 'full', aspect: '169', vsync: 'on', fps60: 'off', aa: '4', af: '16',
+    text: 'es', voice: 'ja', ui: 'es', ctl: 'auto', achievements: 'on', achToast: 'on', bgAnim: 'on', padInvert: 'off', padPtr: 'off', invert: 'off', msens: '100', intro: 'on', anim: 'on', particles: 'on', playtime: 0,
+    padBinds: {}, kbBinds: {} };
+  let cfg = Object.assign({}, DEF);
+  let st = { esOk: true, origOk: true, dolphinOk: true, padPatchOk: true };
+  const save = () => post('save', { config: cfg });
+
+  /* ───── textos ───── */
+  const I18N = {
+    es: { play: 'JUGAR', settings: 'AJUSTES', extras: 'EXTRAS', exit: 'SALIR', back: 'VOLVER', start: 'COMENZAR', playtime: 'TIEMPO DE JUEGO',
+      dPlay: 'Despierta junto a Seto bajo la luna y busca a otros sobrevivientes.', dSettings: 'Sonido, gráficos, controles e idioma.',
+      dExtras: 'Consejos y tabla de controles.', dExit: 'Cerrar el launcher.',
+      fMusic: 'Música del launcher: encender o apagar.', fFull: 'Pantalla completa o ventana (F11).', fGear: 'Abrir los ajustes.',
+      ach: 'LOGROS', credits: 'CRÉDITOS', dAch: 'Los 42 logros de RetroAchievements, sin conexión. Se guardan al guardar la partida.', dCredits: 'Quién hizo posible este viaje.',
+      achNone: 'Para activar los logros, descarga una sola vez el set oficial (42 logros) con tu cuenta gratuita de RetroAchievements. Después funcionan sin internet. Tu contraseña no se guarda.',
+      achUser: 'Usuario de RetroAchievements', achPass: 'Contraseña', achGo: 'INICIAR SESIÓN Y DESCARGAR', achKb: 'Usa el teclado para escribir tu usuario y contraseña.',
+      raLogin: 'Iniciando sesión…', raSet: 'Descargando el set…', raBadges: 'Descargando iconos… {0}/{1}', raFail: 'No se pudo: {0}',
+      achOf: 'DE', achPts: 'PUNTOS', achNote: 'El set es de la versión USA: el launcher traduce sus direcciones a la versión europea (experimental).',
+      achUnl: 'Desbloqueado', achSetting: 'LOGROS', achSettingH: 'Detectar logros mientras juegas', achToast: 'AVISO EN EL JUEGO', achToastH: 'Mostrar el aviso al desbloquear',
+      achTest: 'PROBAR AVISO', achTestH: 'Muestra cómo se verá el aviso dentro del juego', achTestBtn: 'PROBAR', achTestTitle: 'Linterna', achTestDesc: 'Así se verán tus logros dentro del juego.', gAch: 'LOGROS',
+      credAch: 'SET DE LOGROS', credTech: 'TECNOLOGÍA', credRights: 'DERECHOS',
+      credRightsW: 'Homenaje de fans sin fines de lucro. El juego, el arte y las marcas pertenecen a sus respectivos dueños.',
+      ver: 'Versión 1.0', padOn: 'MANDO: CONECTADO', padOff: 'TECLADO Y RATÓN',
+      text: 'TEXTO', textH: 'Idioma de menús y subtítulos', voice: 'VOCES', voiceH: 'Doblaje del juego', ctl: 'CONTROL', ctlH: 'Qué maneja la linterna',
+      auto: 'Automático', pad: 'Mando', kb: 'Teclado y ratón', ja: 'Japonés', en: 'Inglés',
+      playNote: 'El idioma se aplica cada vez que inicias. Los cambios se guardan solos.',
+      recT: 'OPCIONES RECOMENDADAS DENTRO DEL JUEGO', rec: [['Altavoz del mando', 'NO'], ['Indicador de sonido', 'SÍ'], ['Cursor de la pantalla (con mando)', 'NO'], ['Subtítulos', 'SÍ']],
+      noES: 'No encuentro la versión en español (juego\\EU_ESPANOL). Ejecuta scripts\\02_PREPARAR_JUEGO.bat.',
+      noOrig: 'No encuentro la versión original (juego\\EU_ORIGINAL). Ejecuta scripts\\02_PREPARAR_JUEGO.bat.',
+      noDolphin: 'No encuentro Dolphin (Dolphin-x64\\Dolphin.exe).',
+      launching: 'BAJO LA LUNA', steps: ['Preparando Dolphin…', 'Aplicando idioma y controles…', 'Despertando a Seto…'],
+      tSound: 'SONIDO', tGfx: 'GRÁFICOS', tLang: 'IDIOMA', tCtl: 'CONTROLES', tGen: 'GENERAL',
+      gLauncher: 'LAUNCHER', gGame: 'JUEGO', gImage: 'IMAGEN', gQuality: 'CALIDAD', gStick: 'STICKS', gPad: 'MANDO', gKb: 'TECLADO Y RATÓN', gPres: 'PRESENTACIÓN',
+      music: 'MÚSICA', musicH: '«Alone» · Fragile Dreams OST', mvol: 'VOLUMEN MÚSICA', mvolH: 'Solo en el launcher', sfx: 'EFECTOS', sfxH: 'Sonidos del menú',
+      gvol: 'VOLUMEN DEL JUEGO', gvolH: 'También se cambia en pausa (Esc o L3 + R3)',
+      res: 'RESOLUCIÓN', resH: 'Render interno', mode: 'PANTALLA', modeH: 'Modo de la ventana del juego', full: 'Completa', border: 'Sin bordes', win: 'Ventana',
+      aspect: 'PROPORCIÓN', aspectH: 'Relación de aspecto', vsync: 'V-SYNC', vsyncH: 'Evita cortes de imagen', fps60: 'FOTOGRAMAS', fps60H: '60 FPS es experimental: puede trabar escenas o el movimiento', aa: 'ANTIALIASING', aaH: 'Suaviza los bordes',
+      af: 'FILTRADO', afH: 'Nitidez de texturas lejanas', no: 'No', yes: 'Sí',
+      uiLang: 'IDIOMA DEL LAUNCHER', uiLangH: 'Idioma de este menú',
+      padPtr: 'PUNTERO WII', padPtrH: 'Stick derecho, solo para menús', ptrAbs: 'Centrado', ptrRel: 'Libre', ptrOff: 'Apagado',
+      padInvert: 'INVERTIR CÁMARA (MANDO)', padInvertH: 'Eje vertical del stick derecho', invert: 'INVERTIR CÁMARA (RATÓN)', invertH: 'Eje vertical del ratón', msens: 'SENSIBILIDAD DEL RATÓN', msensH: 'Velocidad de la cámara al mirar con el ratón',
+      reset: 'RESTABLECER', resetH: 'Vuelve a los controles por defecto', resetBtn: 'RESTABLECER',
+      bgAnim: 'FONDO VIVO', bgAnimH: 'Agua del lago en movimiento',
+      intro: 'INTRO', introH: 'Animación al abrir', anim: 'ANIMACIONES', animH: 'Movimiento del fondo y del agua', particles: 'LUCIÉRNAGAS', particlesH: 'Partículas flotando',
+      note: 'Los cambios se guardan solos y se aplican al iniciar el juego · {k} para cambiar de pestaña.',
+      press: 'PULSA…', cancelCap: 'Esc cancela', unbound: '—',
+      act: { a: ['ATACAR / ACEPTAR', 'Botón A del mando clásico'], b: ['CANCELAR', 'Botón B'], r: ['ATACAR (COPIA)', 'Botón R · hace lo mismo que A; libre por defecto'],
+        x: ['PISTA DE PF', 'Botón X · inclinar el Wiimote'], y: ['ATACAR (COPIA)', 'Botón Y · hace lo mismo que A; libre por defecto'], zr: ['PRIMERA PERSONA', 'Botón ZR · examinar con la linterna'],
+        l: ['AGACHARSE', 'Botón L'], zl: ['CENTRAR CÁMARA', 'Botón ZL'], plus: ['ACERCAR MAPA', 'Botón +'], minus: ['ALEJAR MAPA', 'Botón −'],
+        du: ['MENÚ ARRIBA', 'Cruceta'], dd: ['MENÚ ABAJO', 'Cruceta'], dl: ['MENÚ IZQUIERDA', 'Cruceta'], dr: ['MENÚ DERECHA', 'Cruceta'],
+        ls_up: ['MOVER ADELANTE', 'Stick izquierdo'], ls_down: ['MOVER ATRÁS', 'Stick izquierdo'], ls_left: ['MOVER IZQUIERDA', 'Stick izquierdo'], ls_right: ['MOVER DERECHA', 'Stick izquierdo'],
+        rs_up: ['LINTERNA ARRIBA', 'Además del ratón'], rs_down: ['LINTERNA ABAJO', 'Además del ratón'], rs_left: ['LINTERNA IZQUIERDA', 'Además del ratón'], rs_right: ['LINTERNA DERECHA', 'Además del ratón'] },
+      xTips: 'CONSEJOS', xCtl: 'CONTROLES',
+      tips: ['En <b>Opciones</b> del juego apaga el <b>altavoz del mando</b>: los sonidos que salían del Wiimote se oirán por tus altavoces.',
+        'Activa el <b>indicador de sonido</b>: te avisa en pantalla de los sonidos que dan pistas.',
+        'Con mando, desactiva el <b>cursor de la pantalla</b>: la propia linterna marca hacia dónde apuntas. Al principio, antes de tener la linterna, puede ayudar dejarlo.',
+        'Cuando el juego diga <i>«acerca el mando a tu oído»</i>, simplemente escucha tus altavoces.',
+        'Pulsa <b>Esc</b> o <b>L3 + R3</b> durante el juego para el menú de pausa: volumen y volver al launcher.',
+        'El juego guarda en la memoria de Dolphin: guarda en las hogueras antes de volver al launcher.'],
+      ctlRef: [['Moverse', 'Stick izq.', 'W A S D'], ['Linterna', 'Hacia donde mira Seto', 'Ratón'], ['Atacar / aceptar / interactuar', 'A', 'Clic izq. · E'], ['Cancelar', 'B', 'Q'],
+        ['Primera persona', 'LT', 'Clic der.'], ['Agacharse', 'RB', 'C'], ['Centrar cámara', 'LB', 'R · Rueda'], ['Cámara', 'Stick der.', 'I J K L · Ratón al borde'], ['Pista de PF', 'Y', 'F'], ['Saltar escena / menú (+)', 'Menu', 'Enter'], ['Mapa (−)', 'View', 'Tab'], ['Menús', 'Cruceta', 'Flechas'], ['Pausa del launcher', 'L3 + R3', 'Esc']],
+      ctlCols: ['ACCIÓN', 'MANDO', 'TECLADO'],
+      credList: [['DIONIXU\'S LAUNCHER', 'Diseño y desarrollo del launcher', 'Dionixu'], ['FRAGILE DREAMS: FAREWELL RUINS OF THE MOON', '© 2009 Namco Bandai Games / tri-Crescendo'],
+        ['TRADUCCIÓN AL CASTELLANO 1.1', 'xulikotony, CUE, TheKiller, Klint, Pacochan, GameZelda e IlDucci', 'tiovictor.romhackhispano.org'],
+        ['MANDO CLÁSICO', 'Classic Controller Support · Vague Rant (GBAtemp)'], ['MÚSICA DEL LAUNCHER', '«Alone» — Fragile Dreams: Farewell Ruins of the Moon Original Soundtrack'], ['EMULACIÓN', 'Dolphin Emulator'], ['TIPOGRAFÍA', 'Cinzel · Cormorant Garamond (SIL OFL)'], ['ASISTENCIA', 'Claude']],
+      thanks: 'Gracias por jugar.',
+      quitT: 'SALIR', quitP: '¿Cerrar el launcher?', quitYes: 'SALIR', quitNo: 'CANCELAR', minimize: 'Minimizar', close: 'Cerrar', fullscreen: 'Pantalla completa (F11)', musicBtn: 'Música', gear: 'Ajustes' },
+    en: { play: 'PLAY', settings: 'SETTINGS', extras: 'EXTRAS', exit: 'EXIT', back: 'BACK', start: 'START', playtime: 'PLAY TIME',
+      dPlay: 'Wake beside Seto under the moon and search for other survivors.', dSettings: 'Sound, graphics, controls and language.',
+      dExtras: 'Tips and controls chart.', dExit: 'Close the launcher.',
+      fMusic: 'Launcher music: on or off.', fFull: 'Fullscreen or window (F11).', fGear: 'Open settings.',
+      ach: 'ACHIEVEMENTS', credits: 'CREDITS', dAch: 'The 42 RetroAchievements, offline. They are kept when you save your game.', dCredits: 'Who made this journey possible.',
+      achNone: 'To enable achievements, download the official set (42 achievements) once with your free RetroAchievements account. After that they work offline. Your password is not stored.',
+      achUser: 'RetroAchievements username', achPass: 'Password', achGo: 'SIGN IN AND DOWNLOAD', achKb: 'Use the keyboard to type your username and password.',
+      raLogin: 'Signing in…', raSet: 'Downloading the set…', raBadges: 'Downloading badges… {0}/{1}', raFail: 'Failed: {0}',
+      achOf: 'OF', achPts: 'POINTS', achNote: 'The set is for the USA version: the launcher translates its addresses to the European version (experimental).',
+      achUnl: 'Unlocked', achSetting: 'ACHIEVEMENTS', achSettingH: 'Track achievements while playing', achToast: 'IN-GAME NOTICE', achToastH: 'Show a notice when unlocking',
+      achTest: 'TEST NOTICE', achTestH: 'Shows how the notice looks in game', achTestBtn: 'TEST', achTestTitle: 'Flashlight', achTestDesc: 'This is how your achievements will look in game.', gAch: 'ACHIEVEMENTS',
+      credAch: 'ACHIEVEMENT SET', credTech: 'TECHNOLOGY', credRights: 'RIGHTS',
+      credRightsW: 'Non-profit fan tribute. The game, art and trademarks belong to their respective owners.',
+      ver: 'Version 1.0', padOn: 'CONTROLLER: CONNECTED', padOff: 'KEYBOARD & MOUSE',
+      text: 'TEXT', textH: 'Menus and subtitles language', voice: 'VOICES', voiceH: 'Voice acting', ctl: 'CONTROL', ctlH: 'What aims the flashlight',
+      auto: 'Automatic', pad: 'Controller', kb: 'Keyboard & mouse', ja: 'Japanese', en: 'English',
+      playNote: 'The language is applied every time you start. Changes save automatically.',
+      recT: 'RECOMMENDED IN-GAME OPTIONS', rec: [['Wii Remote speaker', 'OFF'], ['Sound indicator', 'ON'], ['On-screen cursor (controller)', 'OFF'], ['Subtitles', 'ON']],
+      noES: 'Spanish version not found (juego\\EU_ESPANOL). Run scripts\\02_PREPARAR_JUEGO.bat.',
+      noOrig: 'Original version not found (juego\\EU_ORIGINAL). Run scripts\\02_PREPARAR_JUEGO.bat.',
+      noDolphin: 'Dolphin not found (Dolphin-x64\\Dolphin.exe).',
+      launching: 'UNDER THE MOON', steps: ['Preparing Dolphin…', 'Applying language and controls…', 'Waking Seto…'],
+      tSound: 'SOUND', tGfx: 'GRAPHICS', tLang: 'LANGUAGE', tCtl: 'CONTROLS', tGen: 'GENERAL',
+      gLauncher: 'LAUNCHER', gGame: 'GAME', gImage: 'IMAGE', gQuality: 'QUALITY', gStick: 'STICKS', gPad: 'CONTROLLER', gKb: 'KEYBOARD & MOUSE', gPres: 'PRESENTATION',
+      music: 'MUSIC', musicH: '“Alone” · Fragile Dreams OST', mvol: 'MUSIC VOLUME', mvolH: 'Launcher only', sfx: 'EFFECTS', sfxH: 'Menu sounds',
+      gvol: 'GAME VOLUME', gvolH: 'Also changeable while paused (Esc or L3 + R3)',
+      res: 'RESOLUTION', resH: 'Internal render', mode: 'DISPLAY', modeH: 'Game window mode', full: 'Fullscreen', border: 'Borderless', win: 'Window',
+      aspect: 'ASPECT RATIO', aspectH: 'Screen shape', vsync: 'V-SYNC', vsyncH: 'Prevents tearing', fps60: 'FRAME RATE', fps60H: '60 FPS is experimental: may stall scenes or movement', aa: 'ANTI-ALIASING', aaH: 'Smooths edges',
+      af: 'FILTERING', afH: 'Sharpness of distant textures', no: 'Off', yes: 'On',
+      uiLang: 'LAUNCHER LANGUAGE', uiLangH: 'Language of this menu',
+      padPtr: 'WII POINTER', padPtrH: 'Right stick, menus only', ptrAbs: 'Centered', ptrRel: 'Free', ptrOff: 'Off',
+      padInvert: 'INVERT CAMERA (PAD)', padInvertH: 'Right stick vertical axis', invert: 'INVERT CAMERA (MOUSE)', invertH: 'Mouse vertical axis', msens: 'MOUSE SENSITIVITY', msensH: 'Camera speed when looking with the mouse',
+      reset: 'RESET', resetH: 'Back to default controls', resetBtn: 'RESET',
+      bgAnim: 'LIVING BACKGROUND', bgAnimH: 'Moving lake water',
+      intro: 'INTRO', introH: 'Opening animation', anim: 'ANIMATIONS', animH: 'Background and water motion', particles: 'FIREFLIES', particlesH: 'Floating particles',
+      note: 'Changes save automatically and apply when the game starts · {k} to switch tabs.',
+      press: 'PRESS…', cancelCap: 'Esc cancels', unbound: '—',
+      act: { a: ['ATTACK / CONFIRM', 'Classic A button'], b: ['CANCEL', 'B button'], r: ['ATTACK (COPY)', 'R button · same as A; unbound by default'],
+        x: ['PF HINT', 'X button · tilt the Wii Remote'], y: ['ATTACK (COPY)', 'Y button · same as A; unbound by default'], zr: ['FIRST PERSON', 'ZR button · inspect with the flashlight'],
+        l: ['CROUCH', 'L button'], zl: ['CENTER CAMERA', 'ZL button'], plus: ['MAP ZOOM IN', '+ button'], minus: ['MAP ZOOM OUT', '− button'],
+        du: ['MENU UP', 'D-pad'], dd: ['MENU DOWN', 'D-pad'], dl: ['MENU LEFT', 'D-pad'], dr: ['MENU RIGHT', 'D-pad'],
+        ls_up: ['MOVE FORWARD', 'Left stick'], ls_down: ['MOVE BACK', 'Left stick'], ls_left: ['MOVE LEFT', 'Left stick'], ls_right: ['MOVE RIGHT', 'Left stick'],
+        rs_up: ['FLASHLIGHT UP', 'Besides the mouse'], rs_down: ['FLASHLIGHT DOWN', 'Besides the mouse'], rs_left: ['FLASHLIGHT LEFT', 'Besides the mouse'], rs_right: ['FLASHLIGHT RIGHT', 'Besides the mouse'] },
+      xTips: 'TIPS', xCtl: 'CONTROLS',
+      tips: ['In the game <b>Options</b>, turn off the <b>Wii Remote speaker</b>: those sounds will play through your speakers.',
+        'Turn on the <b>sound indicator</b>: it shows on screen the sounds that give hints.',
+        'With a controller, turn off the <b>on-screen cursor</b>: the flashlight already shows where you aim. Early on, before you get the flashlight, keeping it can help.',
+        'When the game says <i>“hold the Wii Remote to your ear”</i>, just listen to your speakers.',
+        'Press <b>Esc</b> or <b>L3 + R3</b> in game for the pause menu: volume and back to the launcher.',
+        'The game saves to Dolphin\'s memory: save at a bonfire before returning to the launcher.'],
+      ctlRef: [['Move', 'Left stick', 'W A S D'], ['Flashlight', 'Where Seto faces', 'Mouse'], ['Attack / confirm / interact', 'A', 'Left click · E'], ['Cancel', 'B', 'Q'],
+        ['First person', 'LT', 'Right click'], ['Crouch', 'RB', 'C'], ['Center camera', 'LB', 'R · Wheel'], ['Camera', 'Right stick', 'I J K L · Mouse at edge'], ['PF hint', 'Y', 'F'], ['Skip scene / menu (+)', 'Menu', 'Enter'], ['Map (−)', 'View', 'Tab'], ['Menus', 'D-pad', 'Arrows'], ['Launcher pause', 'L3 + R3', 'Esc']],
+      ctlCols: ['ACTION', 'CONTROLLER', 'KEYBOARD'],
+      credList: [['DIONIXU\'S LAUNCHER', 'Launcher design and development', 'Dionixu'], ['FRAGILE DREAMS: FAREWELL RUINS OF THE MOON', '© 2009 Namco Bandai Games / tri-Crescendo'],
+        ['SPANISH TRANSLATION 1.1', 'xulikotony, CUE, TheKiller, Klint, Pacochan, GameZelda & IlDucci', 'tiovictor.romhackhispano.org'],
+        ['CLASSIC CONTROLLER', 'Classic Controller Support · Vague Rant (GBAtemp)'], ['LAUNCHER MUSIC', '“Alone” — Fragile Dreams: Farewell Ruins of the Moon Original Soundtrack'], ['EMULATION', 'Dolphin Emulator'], ['TYPEFACES', 'Cinzel · Cormorant Garamond (SIL OFL)'], ['ASSISTANCE', 'Claude']],
+      thanks: 'Thank you for playing.',
+      quitT: 'EXIT', quitP: 'Close the launcher?', quitYes: 'EXIT', quitNo: 'CANCEL', minimize: 'Minimize', close: 'Close', fullscreen: 'Fullscreen (F11)', musicBtn: 'Music', gear: 'Settings' }
+  };
+  const L = () => I18N[cfg.ui] || I18N.es;
+
+  /* ───── sonidos (sintetizados: campanas suaves) ───── */
+  let ac = null;
+  const audio = () => { if (!ac) { try { ac = new AudioContext(); } catch (e) {} } return ac; };
+  const chime = (freqs, dur, vol, type) => {
+    if (cfg.sfx !== 'on') return; const a = audio(); if (!a) return;
+    const t0 = a.currentTime;
+    freqs.forEach((f, i) => {
+      const o = a.createOscillator(), g = a.createGain();
+      o.type = type || 'sine'; o.frequency.value = f;
+      const t = t0 + i * 0.07;
+      g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g).connect(a.destination); o.start(t); o.stop(t + dur + .05);
+    });
+  };
+  const SFX = { move: () => chime([1568], .35, .05), tick: () => chime([2093], .18, .035), ok: () => chime([1046.5, 1568, 2093], .8, .06),
+    back: () => chime([1174.7, 784], .5, .05), page: () => chime([1318.5, 1760], .45, .045), start: () => chime([523.3, 784, 1046.5, 1568, 2093], 1.8, .06) };
+  const sfx = (n) => { try { SFX[n] && SFX[n](); } catch (e) {} };
+
+  /* ───── música opcional (assets/music.mp3) ───── */
+  const music = new Audio('assets/music.mp3'); music.loop = true; music.volume = 0; let musicOk = true, mFade = null, gameOn = false;
+  music.addEventListener('error', () => { musicOk = false; $('#bMusic').style.display = 'none'; });
+  const musicVol = () => Math.max(0, Math.min(1, (+cfg.mvol || 0) / 100)) * .8;
+  const fadeMusic = (to, ms, done) => { clearInterval(mFade); const from = music.volume, t0 = performance.now();
+    mFade = setInterval(() => { const k = Math.min(1, (performance.now() - t0) / ms); music.volume = from + (to - from) * k; if (k >= 1) { clearInterval(mFade); mFade = null; done && done(); } }, 30); };
+  const syncMusic = () => {
+    if (!musicOk) return;
+    if (cfg.music === 'on' && !gameOn) { if (music.paused) { music.play().then(() => fadeMusic(musicVol(), 1600)).catch(() => {}); } else if (!mFade) music.volume = musicVol(); }
+    else if (!music.paused) fadeMusic(0, 600, () => music.pause());
+  };
+
+  /* ───── dispositivo ───── */
+  let inputDev = 'kb', padSeen = false;
+  const device = (d) => {
+    if (d === 'pad') padSeen = true;
+    if (d === inputDev) return; inputDev = d;
+    document.body.classList.toggle('nocur', d === 'pad');
+    post('device', { value: d }); paintFoot(); noteTxt(); paintGlyphs();
+  };
+  const paintFoot = () => {
+    $('#fVer').textContent = L().ver;
+    const f = $('#fDev'); f.textContent = inputDev === 'pad' || padSeen && inputDev === 'pad' ? L().padOn : L().padOff;
+    f.className = inputDev === 'pad' ? 'ok' : '';
+    $('#playtime').textContent = fmt(cfg.playtime | 0);
+  };
+  const paintGlyphs = () => document.querySelectorAll('[data-g]').forEach((g) => { g.textContent = inputDev === 'pad' ? g.dataset.g.toUpperCase() : 'ESC'; });
+  const fmt = (s) => [Math.floor(s / 3600), Math.floor(s / 60) % 60, s % 60].map((n) => String(n).padStart(2, '0')).join(':');
+
+  /* ───── menú principal ───── */
+  const FOOT = [['#bMusic', 'fMusic'], ['#bFull', 'fFull'], ['#bGear', 'fGear']];
+  let fsel = -1;
+  const paintFootSel = () => { FOOT.forEach(([id], i) => $(id).classList.toggle('sel', i === fsel)); if (fsel >= 0) setDesc(L()[FOOT[fsel][1]]); };
+  const MENU = [['play', 'dPlay'], ['ach', 'dAch'], ['settings', 'dSettings'], ['extras', 'dExtras'], ['credits', 'dCredits'], ['exit', 'dExit']];
+  let msel = 0, screen = 'menu';
+  const menuEl = $('#menu');
+  const ornSVG = '<svg class="orn" viewBox="0 0 70 12"><path d="M0 6h26M44 6h26" stroke="rgba(170,210,255,.55)" stroke-width="1"/><path d="M35 1l4 5-4 5-4-5z" fill="none" stroke="rgba(200,230,255,.85)" stroke-width="1"/><circle cx="35" cy="6" r="1.4" fill="#cfe9ff"/></svg>';
+  const buildMenu = () => {
+    menuEl.innerHTML = '';
+    MENU.forEach(([id], i) => {
+      const el = document.createElement('div'); el.className = 'mi'; el.style.transitionDelay = (300 + i * 110) + 'ms';
+      el.innerHTML = `<div class="band"></div>${ornSVG}<img class="lotus" src="assets/lotus.png" alt=""><span class="lbl">${L()[id]}</span>`;
+      el.addEventListener('mouseenter', () => { device('kb'); if (screen === 'foot') { fsel = -1; paintFootSel(); screen = 'menu'; document.body.classList.remove('infoot'); } if (screen === 'menu' && msel !== i) { msel = i; sfx('move'); paintMenu(); } });
+      el.addEventListener('click', () => { device('kb'); if (screen !== 'menu') { if (i === msel) return; closePanel(true); } msel = i; paintMenu(); choose(); });
+      menuEl.appendChild(el);
+    });
+    setTimeout(() => menuEl.querySelectorAll('.mi').forEach((e) => (e.style.transitionDelay = '0ms')), 1400);
+    paintMenu();
+  };
+  const paintMenu = () => {
+    menuEl.querySelectorAll('.mi').forEach((e, i) => { e.classList.toggle('sel', i === msel); e.querySelector('.lbl').textContent = L()[MENU[i][0]]; });
+    if (screen === 'menu') setDesc(L()[MENU[msel][1]]);
+  };
+  let lastDesc = null;
+  const setDesc = (t) => { if (t === lastDesc) return; lastDesc = t; const d = $('#desc'); d.style.opacity = 0; setTimeout(() => { d.textContent = t || ''; d.style.opacity = ''; }, 140); };
+  const choose = () => {
+    const id = MENU[msel][0];
+    if (id === 'exit') { sfx('ok'); askQuit(); return; }
+    sfx('ok'); openPanel(id);
+  };
+
+  /* ───── paneles ───── */
+  const PANELS = { play: '#pPlay', ach: '#pAch', settings: '#pSettings', extras: '#pExtras', credits: '#pCredits' };
+  let panel = null;
+  const openPanel = (id) => {
+    panel = id; screen = 'panel'; document.body.classList.add('inpanel');
+    Object.entries(PANELS).forEach(([k, s]) => $(s).classList.toggle('on', k === id));
+    if (id === 'play') { prow = 0; paintPlay(); }
+    if (id === 'settings') { row = 0; paintSettings(); }
+    if (id === 'extras') { xtab = xtab || 'tips'; paintExtras(); }
+    if (id === 'ach') { achSel = 0; paintAch(); }
+    if (id === 'credits') paintCredits();
+    msel = MENU.findIndex((m) => m[0] === id); paintMenu();
+  };
+  const closePanel = (quiet) => {
+    if (capture) return; if (!quiet) sfx('back');
+    Object.values(PANELS).forEach((s) => $(s).classList.remove('on'));
+    document.body.classList.remove('inpanel'); panel = null; screen = 'menu'; lastDesc = null; paintMenu();
+  };
+  document.querySelectorAll('[data-back]').forEach((b) => b.addEventListener('click', () => closePanel()));
+
+  /* ── filas genéricas (jugar y ajustes) ── */
+  const YN = () => [['on', L().yes], ['off', L().no]];
+  const renderRows = (el, list, sel, still, onPick) => {
+    const keep = still ? el.scrollTop : 0;
+    el.classList.toggle('still', !!still); el.innerHTML = '';
+    list.forEach((r, i) => {
+      if (r.group) el.insertAdjacentHTML('beforeend', `<div class="grp">${r.group}</div>`);
+      const d = document.createElement('div'); d.className = 'row' + (i === sel ? ' sel' : ''); d.style.animationDelay = (i * 30) + 'ms';
+      d.innerHTML = `<div class="lab"><b>${r.label}</b>${r.hint ? `<i>${r.hint}</i>` : ''}</div>`;
+      if (r.type === 'bind') {
+        const live = capture && capture.dev === r.dev && capture.act === r.act, v = bindsOf(r.dev)[r.act];
+        d.insertAdjacentHTML('beforeend', `<button class="bind${live ? ' live' : ''}${v ? '' : ' none'}">${live ? L().press : bindLabel(r.dev, v)}</button>`);
+        d.querySelector('.bind').onclick = (e) => { e.stopPropagation(); if (capture || performance.now() - capEnd < 400) return; onPick(i); startCapture(r.dev, r.act); };
+      } else if (r.type === 'action') {
+        d.insertAdjacentHTML('beforeend', `<button class="pbtn">${r.btn}</button>`);
+        d.querySelector('.pbtn').onclick = (e) => { e.stopPropagation(); if (!capture) r.run(); };
+      } else if (r.type === 'slider') {
+        const v = +cfg[r.key];
+        d.insertAdjacentHTML('beforeend', `<div class="slider"><div class="track"><div class="fill" style="width:${v}%"></div><div class="knob" style="left:${v}%"></div></div><span class="pct">${v}%</span></div>`);
+        const tr = d.querySelector('.track');
+        const setFrom = (e) => { const b = tr.getBoundingClientRect(); cfg[r.key] = String(Math.round(Math.max(0, Math.min(1, (e.clientX - b.left) / b.width)) * 20) * 5); if (r.key === 'mvol') cfg.mvol = +cfg.mvol; applyKey(r.key); save(); paintSlider(d, r); };
+        tr.addEventListener('mousedown', (e) => { setFrom(e); const mv = (ev) => setFrom(ev); addEventListener('mousemove', mv); addEventListener('mouseup', () => removeEventListener('mousemove', mv), { once: true }); });
+      } else {
+        const o = document.createElement('div'); o.className = 'opts';
+        r.opts.forEach(([v, t]) => {
+          const b = document.createElement('button'); b.className = 'opt' + (cfg[r.key] === v ? ' on' : ''); b.textContent = t;
+          b.onclick = (e) => { e.stopPropagation(); if (capture) return; onPick(i); cfg[r.key] = v; applyKey(r.key); save(); sfx('tick'); repaintCurrent(true); };
+          o.appendChild(b);
+        });
+        d.appendChild(o);
+      }
+      d.addEventListener('mouseenter', () => { if (capture) return; device('kb'); if (onPick(i, true)) {} });
+      el.appendChild(d);
+    });
+    if (still) el.scrollTop = keep;
+    markRows(el, sel, list);
+  };
+  const paintSlider = (d, r) => { const v = +cfg[r.key]; d.querySelector('.fill').style.width = v + '%'; d.querySelector('.knob').style.left = v + '%'; d.querySelector('.pct').textContent = v + '%'; };
+  const markRows = (el, sel, list) => {
+    const els = el.querySelectorAll('.row'); els.forEach((e, i) => e.classList.toggle('sel', i === sel));
+    const r = els[sel]; if (r) { const k = stage.getBoundingClientRect().width / 1280 || 1, a = el.getBoundingClientRect(), b = r.getBoundingClientRect();
+      const prev = r.previousElementSibling, top = prev && prev.classList.contains('grp') ? prev.getBoundingClientRect().top : b.top;
+      if (top < a.top) el.scrollTop -= (a.top - top) / k + 2; else if (b.bottom > a.bottom) el.scrollTop += (b.bottom - a.bottom) / k + 2;
+      if (list[sel]) setDesc(list[sel].hint || ''); }
+  };
+  const stepValue = (r, dir) => {
+    if (!r || r.type === 'bind' || r.type === 'action' || r.type === 'info') return false;
+    if (r.type === 'slider') { cfg[r.key] = String(Math.max(0, Math.min(100, (+cfg[r.key]) + dir * 5))); if (r.key === 'mvol') cfg.mvol = +cfg.mvol; applyKey(r.key); save(); sfx('tick'); return 'slider'; }
+    const i = r.opts.findIndex((o) => o[0] === cfg[r.key]);
+    cfg[r.key] = r.opts[(i + dir + r.opts.length) % r.opts.length][0]; applyKey(r.key); save(); sfx('tick'); return true;
+  };
+
+  /* ── JUGAR ── */
+  let prow = 0;
+  const playRows = () => [
+    { key: 'text', label: L().text, hint: L().textH, opts: [['es', 'Español'], ['en', 'English'], ['fr', 'Français'], ['de', 'Deutsch']] },
+    { key: 'voice', label: L().voice, hint: L().voiceH, opts: [['ja', L().ja], ['en', L().en]] },
+    { key: 'ctl', label: L().ctl, hint: L().ctlH, opts: [['auto', L().auto], ['pad', L().pad], ['kb', L().kb]] },
+    { type: 'start', label: '', hint: L().dPlay }
+  ];
+  const paintPlay = (still) => {
+    const list = playRows().filter((r) => r.type !== 'start');
+    renderRows($('#playRows'), list, prow, still, (i, hover) => { if (prow !== i) { prow = i; if (hover) sfx('move'); markPlay(); } return true; });
+    $('#bStart').textContent = L().start; $('#playNote').textContent = L().playNote;
+    $('#playSum').innerHTML = `<h4>${L().recT}</h4><ul>${L().rec.map(([a, b]) => `<li><span>${a}</span><span>${b}</span></li>`).join('')}</ul>`;
+    const w = []; if (!st.dolphinOk) w.push(L().noDolphin);
+    if (cfg.text === 'es' && !st.esOk) w.push(L().noES); if (cfg.text !== 'es' && !st.origOk) w.push(L().noOrig);
+    $('#playWarn').innerHTML = w.map((t) => `<div class="warnbox">${t}</div>`).join('');
+    markPlay();
+  };
+  const markPlay = () => {
+    const list = playRows();
+    markRows($('#playRows'), prow < 3 ? prow : -1, list);
+    $('#bStart').classList.toggle('sel', prow === 3);
+    if (prow === 3) setDesc(L().dPlay);
+  };
+  $('#bStart').addEventListener('mouseenter', () => { device('kb'); if (prow !== 3) { prow = 3; sfx('move'); markPlay(); } });
+  $('#bStart').addEventListener('click', () => launch());
+
+  /* ── AJUSTES ── */
+  const TABS = () => [['sound', L().tSound], ['gfx', L().tGfx], ['lang', L().tLang], ['ctl', L().tCtl], ['general', L().tGen]];
+  let tab = 'sound', row = 0;
+  const settingsRows = () => {
+    const l = L();
+    if (tab === 'sound') return [
+      { group: l.gLauncher, key: 'music', label: l.music, hint: l.musicH, opts: YN() },
+      { key: 'mvol', type: 'slider', label: l.mvol, hint: l.mvolH },
+      { key: 'sfx', label: l.sfx, hint: l.sfxH, opts: YN() },
+      { group: l.gGame, key: 'gvol', type: 'slider', label: l.gvol, hint: l.gvolH }];
+    if (tab === 'gfx') return [
+      { group: l.gImage, key: 'res', label: l.res, hint: l.resH, opts: [['720', '720p'], ['1080', '1080p'], ['1440', '1440p'], ['2160', '4K']] },
+      { key: 'mode', label: l.mode, hint: l.modeH, opts: [['full', l.full], ['border', l.border], ['win', l.win]] },
+      { key: 'aspect', label: l.aspect, hint: l.aspectH, opts: [['169', '16:9'], ['43', '4:3'], ['auto', 'Auto']] },
+      { key: 'vsync', label: l.vsync, hint: l.vsyncH, opts: YN() },
+      { key: 'fps60', label: l.fps60, hint: l.fps60H, opts: [['off', '30 FPS'], ['on', '60 FPS (exp.)']] },
+      { group: l.gQuality, key: 'aa', label: l.aa, hint: l.aaH, opts: [['1', l.no], ['2', '2×'], ['4', '4×'], ['8', '8×']] },
+      { key: 'af', label: l.af, hint: l.afH, opts: [['1', '1×'], ['4', '4×'], ['16', '16×']] }];
+    if (tab === 'lang') return [
+      { group: l.gGame, key: 'text', label: l.text, hint: l.textH, opts: [['es', 'Español'], ['en', 'English'], ['fr', 'Français'], ['de', 'Deutsch']] },
+      { key: 'voice', label: l.voice, hint: l.voiceH, opts: [['ja', l.ja], ['en', l.en]] },
+      { group: l.gLauncher, key: 'ui', label: l.uiLang, hint: l.uiLangH, opts: [['es', 'Español'], ['en', 'English']] }];
+    if (tab === 'general') return [
+      { group: l.gPres, key: 'intro', label: l.intro, hint: l.introH, opts: YN() },
+      { key: 'anim', label: l.anim, hint: l.animH, opts: YN() },
+      { key: 'bgAnim', label: l.bgAnim, hint: l.bgAnimH, opts: YN() },
+      { key: 'particles', label: l.particles, hint: l.particlesH, opts: YN() },
+      { group: l.gAch, key: 'achievements', label: l.achSetting, hint: l.achSettingH, opts: YN() },
+      { key: 'achToast', label: l.achToast, hint: l.achToastH, opts: YN() },
+      { type: 'action', label: l.achTest, hint: l.achTestH, btn: l.achTestBtn, run: () => { sfx('ok'); if (host) post('toastTest', { data: { title: l.achTestTitle, description: l.achTestDesc } }); else toast(l.achTestTitle); } }];
+    // controles
+    const PAD_ACTS = ['a', 'b', 'r', 'x', 'y', 'zr', 'l', 'zl', 'plus', 'minus', 'du', 'dd', 'dl', 'dr'];
+    const KB_ACTS = ['ls_up', 'ls_down', 'ls_left', 'ls_right', 'a', 'b', 'r', 'x', 'y', 'zr', 'l', 'zl', 'plus', 'minus', 'du', 'dd', 'dl', 'dr', 'rs_up', 'rs_down', 'rs_left', 'rs_right'];
+    const out = [
+      { group: l.gStick, key: 'ctl', label: l.ctl, hint: l.ctlH, opts: [['auto', l.auto], ['pad', l.pad], ['kb', l.kb]] },
+      { key: 'padInvert', label: l.padInvert, hint: l.padInvertH, opts: YN() },
+      { key: 'invert', label: l.invert, hint: l.invertH, opts: YN() },
+      { key: 'msens', label: l.msens, hint: l.msensH, opts: [['50', '50 %'], ['75', '75 %'], ['100', '100 %'], ['150', '150 %'], ['200', '200 %']] }];
+    PAD_ACTS.forEach((a, i) => out.push({ group: i === 0 ? l.gPad : null, type: 'bind', dev: 'pad', act: a, label: l.act[a][0], hint: l.act[a][1] }));
+    KB_ACTS.forEach((a, i) => out.push({ group: i === 0 ? l.gKb : null, type: 'bind', dev: 'kb', act: a, label: l.act[a][0], hint: l.act[a][1] }));
+    out.push({ type: 'action', label: l.reset, hint: l.resetH, btn: l.resetBtn, run: () => { cfg.padBinds = {}; cfg.kbBinds = {}; save(); sfx('ok'); toast(l.reset); paintSettings(true); } });
+    return out;
+  };
+  const noteTxt = () => { const n = $('#pnote'); if (n) n.textContent = L().note.replace('{k}', inputDev === 'pad' ? 'LB / RB' : 'Q / E'); };
+  const paintSettings = (still) => {
+    const tabs = $('#tabs'); tabs.innerHTML = `<span class="tabkey">${inputDev === 'pad' ? 'LB' : 'Q'}</span>`;
+    TABS().forEach(([id, label]) => {
+      const b = document.createElement('button'); b.className = 'tab' + (id === tab ? ' on' : ''); b.textContent = label;
+      b.onclick = () => { if (capture) return; tab = id; row = 0; sfx('page'); paintSettings(); };
+      tabs.appendChild(b);
+    });
+    tabs.insertAdjacentHTML('beforeend', `<span class="tabkey">${inputDev === 'pad' ? 'RB' : 'E'}</span>`);
+    noteTxt();
+    renderRows($('#rows'), settingsRows(), row, still, (i, hover) => { if (row !== i) { row = i; if (hover) sfx('move'); markRows($('#rows'), row, settingsRows()); } return true; });
+  };
+  const switchTab = (d) => { if (capture) return; const t = TABS(), i = t.findIndex((x) => x[0] === tab); tab = t[(i + d + t.length) % t.length][0]; row = 0; sfx('page'); paintSettings(); };
+  const repaintCurrent = (still) => { if (panel === 'play') paintPlay(still); else if (panel === 'settings') paintSettings(still); };
+
+  /* ── reasignar controles ── */
+  const PAD_DEF = { a: 'Button A', b: 'Button B', x: 'Button Y', y: '', r: '', l: 'Shoulder R', zl: 'Shoulder L', zr: 'Trigger L', plus: 'Start', minus: 'Back', du: 'Pad N', dd: 'Pad S', dl: 'Pad W', dr: 'Pad E' };
+  const KB_DEF = { ls_up: 'W', ls_down: 'S', ls_left: 'A', ls_right: 'D', rs_up: 'I', rs_down: 'K', rs_left: 'J', rs_right: 'L', a: 'Click 0', b: 'Q', x: 'F', y: '', r: '', l: 'C', zl: 'R', zr: 'Click 1', plus: 'RETURN', minus: 'TAB', du: 'UP', dd: 'DOWN', dl: 'LEFT', dr: 'RIGHT' };
+  const PAD_IDX = ['Button A', 'Button B', 'Button X', 'Button Y', 'Shoulder L', 'Shoulder R', 'Trigger L', 'Trigger R', 'Back', 'Start', 'Thumb L', 'Thumb R', 'Pad N', 'Pad S', 'Pad W', 'Pad E'];
+  const PAD_LABEL = { 'Button A': 'A', 'Button B': 'B', 'Button X': 'X', 'Button Y': 'Y', 'Shoulder L': 'LB', 'Shoulder R': 'RB', 'Trigger L': 'LT', 'Trigger R': 'RT', Back: 'VIEW', Start: 'MENU', 'Thumb L': 'L3', 'Thumb R': 'R3', 'Pad N': '▲', 'Pad S': '▼', 'Pad W': '◄', 'Pad E': '►' };
+  const KEY_LABEL = { 'Click 0': 'CLIC IZQ.', 'Click 1': 'CLIC DER.', 'Click 2': 'RUEDA', SPACE: 'ESPACIO', RETURN: 'ENTER', ESCAPE: 'ESC', BACK: 'RETROCESO', TAB: 'TAB', LSHIFT: 'SHIFT', RSHIFT: 'SHIFT DER.', LCONTROL: 'CTRL', RCONTROL: 'CTRL DER.', LMENU: 'ALT', UP: '↑', DOWN: '↓', LEFT: '←', RIGHT: '→', MINUS: '−', EQUALS: '=', CAPITAL: 'BLOQ MAYÚS' };
+  const CODE2DI = { Space: 'SPACE', Enter: 'RETURN', NumpadEnter: 'NUMPADENTER', Escape: 'ESCAPE', Tab: 'TAB', Backspace: 'BACK', ShiftLeft: 'LSHIFT', ShiftRight: 'RSHIFT', ControlLeft: 'LCONTROL', ControlRight: 'RCONTROL',
+    AltLeft: 'LMENU', ArrowUp: 'UP', ArrowDown: 'DOWN', ArrowLeft: 'LEFT', ArrowRight: 'RIGHT', Minus: 'MINUS', Equal: 'EQUALS', BracketLeft: 'LBRACKET', BracketRight: 'RBRACKET', Semicolon: 'SEMICOLON',
+    Quote: 'APOSTROPHE', Backquote: 'GRAVE', Backslash: 'BACKSLASH', IntlBackslash: 'OEM_102', Comma: 'COMMA', Period: 'PERIOD', Slash: 'SLASH', CapsLock: 'CAPITAL', Insert: 'INSERT', Delete: 'DELETE',
+    Home: 'HOME', End: 'END', PageUp: 'PRIOR', PageDown: 'NEXT', NumpadAdd: 'ADD', NumpadSubtract: 'SUBTRACT', NumpadMultiply: 'MULTIPLY', NumpadDivide: 'DIVIDE', NumpadDecimal: 'DECIMAL' };
+  const codeToDI = (c) => CODE2DI[c] || (/^Key[A-Z]$/.test(c) ? c.slice(3) : /^Digit\d$/.test(c) ? c.slice(5) : /^Numpad\d$/.test(c) ? 'NUMPAD' + c.slice(6) : /^F([2-9]|1[0-2])$/.test(c) ? c : null);
+  const bindsOf = (dev) => dev === 'pad' ? Object.assign({}, PAD_DEF, cfg.padBinds) : Object.assign({}, KB_DEF, cfg.kbBinds);
+  const bindLabel = (dev, v) => !v ? L().unbound : dev === 'pad' ? (PAD_LABEL[v] || v) : (KEY_LABEL[v] || v);
+  let capture = null, capEnd = 0;
+  const startCapture = (dev, act) => { capture = { dev, act }; sfx('page'); setDesc(L().cancelCap); paintSettings(true); };
+  const finishCapture = (val) => {
+    if (!capture) return; const { dev, act } = capture; capture = null; capEnd = performance.now();
+    if (val) {
+      const key = dev === 'pad' ? 'padBinds' : 'kbBinds', cur = bindsOf(dev);
+      const o = Object.assign({}, cfg[key]);
+      for (const [k, v] of Object.entries(cur)) if (v === val && k !== act) o[k] = '';      // sin duplicados
+      o[act] = val; cfg[key] = o; save(); sfx('ok');
+    } else sfx('back');
+    paintSettings(true);
+  };
+  addEventListener('mousedown', (e) => { if (capture && capture.dev === 'kb') { e.preventDefault(); e.stopPropagation(); finishCapture(['Click 0', 'Click 2', 'Click 1'][e.button] || null); } }, true);
+
+  /* ── EXTRAS ── */
+  let xtab = 'tips';
+  const paintExtras = () => {
+    const l = L(), t = $('#xtabs');
+    t.innerHTML = `<span class="tabkey">${inputDev === 'pad' ? 'LB' : 'Q'}</span>`;
+    [['tips', l.xTips], ['ctl', l.xCtl]].forEach(([id, label]) => {
+      const b = document.createElement('button'); b.className = 'tab' + (id === xtab ? ' on' : ''); b.textContent = label;
+      b.onclick = () => { xtab = id; sfx('page'); paintExtras(); }; t.appendChild(b);
+    });
+    t.insertAdjacentHTML('beforeend', `<span class="tabkey">${inputDev === 'pad' ? 'RB' : 'E'}</span>`);
+    const r = $('#xrows'); r.scrollTop = 0;
+    if (xtab === 'tips') r.innerHTML = `<div class="stat"><b>${fmt(cfg.playtime | 0)}</b><i>${l.playtime.toLowerCase()}</i></div><ul class="tips">${l.tips.map((x) => `<li>${x}</li>`).join('')}</ul>`;
+    if (xtab === 'ctl') r.innerHTML = `<div class="kv" style="grid-template-columns:1.2fr 1fr 1.3fr"><span style="color:var(--glow);font-family:var(--display);font-size:11px;letter-spacing:3px">${l.ctlCols[0]}</span><span style="color:var(--glow);font-family:var(--display);font-size:11px;letter-spacing:3px;text-align:center">${l.ctlCols[1]}</span><span style="color:var(--glow);font-family:var(--display);font-size:11px;letter-spacing:3px;text-align:right">${l.ctlCols[2]}</span>${l.ctlRef.map(([a, p, k]) => `<span>${a}</span><span style="font-family:var(--display);font-size:13px;text-align:center">${p}</span><span style="font-family:var(--display);font-size:12.5px;text-align:right;color:var(--ink)">${k}</span>`).join('')}</div>`;
+    setDesc(l.dExtras);
+  };
+  const switchXtab = (d) => { xtab = xtab === 'tips' ? 'ctl' : 'tips'; sfx('page'); paintExtras(); };
+
+  /* ── CRÉDITOS ── */
+  const paintCredits = () => {
+    const l = L(), list = l.credList.slice();
+    if (LG && LG.list) { const au = [...new Set(LG.list.map((a) => a.author).filter(Boolean))]; if (au.length) list.push([l.credAch, au.join(' · ') + ' — RetroAchievements']); }
+    else list.push([l.credAch, 'RetroAchievements']);
+    list.push([l.credTech, 'Electron · rcheevos (RetroAchievements) · Dolphin Emulator (GPLv2)'], [l.credRights, l.credRightsW]);
+    $('#credBody').innerHTML = `<div class="credits roll">${list.map(([h, ...p]) => `<h3>${h}</h3>${p.map((x) => `<p>${x}</p>`).join('')}`).join('')}<h3>&nbsp;</h3><p style="font-style:italic;color:var(--mute)">${l.thanks}</p></div>`;
+    $('#credBody').scrollTop = 0; setDesc(l.dCredits);
+  };
+
+  /* ── LOGROS ── */
+  let LG = null, achSel = 0, raBusy = false;
+  const esc = (t) => String(t == null ? '' : t).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const achTr = (a) => { const t = LG && LG.tr && LG.tr[cfg.ui] && LG.tr[cfg.ui][a.id]; return t ? { title: t[0] || a.title, description: t[1] || a.description } : a; };
+  const paintAch = () => {
+    const l = L(), b = $('#achBody');
+    if (!LG || !LG.list || !LG.list.length) {
+      b.innerHTML = `<div class="raform"><p>${l.achNone}</p><input id="raUser" placeholder="${l.achUser}" autocomplete="username" spellcheck="false">
+        <input id="raPass" type="password" placeholder="${l.achPass}" autocomplete="current-password"><button class="big" id="raGo" style="margin-top:4px;font-size:15px;letter-spacing:4px;min-width:0;padding:0 26px">${l.achGo}</button>
+        <div class="msg" id="raMsg">${inputDev === 'pad' ? l.achKb : ''}</div></div>`;
+      const go = () => { if (raBusy) return; const u = $('#raUser').value.trim(), p = $('#raPass').value; if (!u || !p) { $('#raUser').focus(); return; }
+        raBusy = true; $('#raGo').disabled = true; $('#raMsg').className = 'msg'; $('#raMsg').textContent = l.raLogin; sfx('ok'); post('raLogin', { user: u, pass: p }); };
+      $('#raGo').onclick = go;
+      $('#raPass').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+      $('#raUser').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('#raPass').focus(); } });
+      setDesc(l.dAch); return;
+    }
+    const un = LG.unlocked || {}, tot = LG.list.length, n = LG.list.filter((a) => un[a.id]).length;
+    const pts = LG.list.reduce((s, a) => s + (un[a.id] ? a.points : 0), 0), ptsT = LG.list.reduce((s, a) => s + a.points, 0);
+    const list = LG.list.slice().sort((x, y) => (un[y.id] ? 1 : 0) - (un[x.id] ? 1 : 0));
+    b.innerHTML = `<div class="achtop"><div class="num">${n}<small>${l.achOf} ${tot}</small></div><div class="achbar"><i style="width:${tot ? n * 100 / tot : 0}%"></i></div><div class="pts">${pts} / ${ptsT} ${l.achPts}</div></div>
+      <div class="agrid">${list.map((a, i) => { const t = achTr(a), on = !!un[a.id], img = on ? a.badge : (a.badgeLock || a.badge);
+        return `<div class="ach${on ? '' : ' lock'}" data-i="${i}">${img ? `<img src="${esc(img)}" alt="" onerror="this.outerHTML='<div class=ph>✦</div>'">` : '<div class="ph">✦</div>'}
+        <div class="tx"><b>${esc(t.title)}</b><i>${esc(t.description)}</i></div><span class="pt${on ? ' ok' : ''}">${a.points}</span></div>`; }).join('')}</div>
+      <div class="pnote">${l.achNote}</div>`;
+    b._list = list;
+    b.querySelectorAll('.ach').forEach((c) => c.addEventListener('mouseenter', () => { device('kb'); const i = +c.dataset.i; if (i !== achSel) { achSel = i; sfx('move'); markAch(); } }));
+    markAch();
+  };
+  const markAch = () => {
+    const b = $('#achBody'), cs = b.querySelectorAll('.ach'); if (!cs.length) return;
+    achSel = Math.max(0, Math.min(cs.length - 1, achSel));
+    cs.forEach((c, i) => c.classList.toggle('sel', i === achSel));
+    const c = cs[achSel], k = stage.getBoundingClientRect().width / 1280 || 1, a = b.getBoundingClientRect(), r = c.getBoundingClientRect();
+    if (r.top < a.top) b.scrollTop -= (a.top - r.top) / k + 4; else if (r.bottom > a.bottom) b.scrollTop += (r.bottom - a.bottom) / k + 4;
+    const it = b._list && b._list[achSel]; if (it) { const un = LG.unlocked && LG.unlocked[it.id]; setDesc(un ? L().achUnl + ' · ' + new Date(un).toLocaleDateString(cfg.ui === 'en' ? 'en-US' : 'es-MX') : achTr(it).description); }
+  };
+
+  /* ───── aplicar ajustes visibles ───── */
+  const applyKey = (k) => {
+    if (!k || k === 'ui') { trAll(); lastDesc = null; buildMenu(); }
+    if (!k || k === 'anim') document.body.classList.toggle('anim', cfg.anim === 'on');
+    if (k === 'bgAnim') { glStill = false; }
+    if (!k || k === 'music') { $('#bMusic').classList.toggle('off', cfg.music !== 'on'); syncMusic(); }
+    if (k === 'mvol') { if (+cfg.mvol > 0 && cfg.music !== 'on') cfg.music = 'on'; $('#bMusic').classList.toggle('off', cfg.music !== 'on'); if (!music.paused && !mFade) music.volume = musicVol(); syncMusic(); }
+    if (k === 'text') repaintCurrent(true);
+  };
+  const trAll = () => {
+    const l = L(); document.documentElement.lang = cfg.ui || 'es';
+    document.querySelectorAll('[data-t]').forEach((e) => { e.textContent = l[e.dataset.t]; });
+    $('#bMin').title = l.minimize; $('#bClose').title = l.close; $('#bFull').title = l.fullscreen; $('#bMusic').title = l.musicBtn; $('#bGear').title = l.gear;
+    paintFoot(); paintGlyphs();
+    if (panel === 'play') paintPlay(true); if (panel === 'settings') paintSettings(true); if (panel === 'extras') paintExtras();
+  };
+
+  /* ───── diálogo, aviso ───── */
+  let dlgSel = 0, dlgOn = false;
+  const askQuit = () => { const l = L(); $('#dlgT').textContent = l.quitT; $('#dlgP').textContent = l.quitP; $('#dlgYes').textContent = l.quitYes; $('#dlgNo').textContent = l.quitNo;
+    dlgOn = true; dlgSel = 0; screen = 'dlg'; document.body.classList.add('dlg'); paintDlg(); };
+  const paintDlg = () => { $('#dlgNo').classList.toggle('sel', dlgSel === 0); $('#dlgYes').classList.toggle('sel', dlgSel === 1); };
+  const closeDlg = () => { dlgOn = false; document.body.classList.remove('dlg'); screen = panel ? 'panel' : 'menu'; };
+  $('#dlgNo').onclick = () => { sfx('back'); closeDlg(); };
+  // cierre: fundido a negro suave (imagen y música) y luego se cierra
+  const quitApp = () => { if (document.body.classList.contains('closing')) return; sfx('back'); closeDlg(); screen = 'closing';
+    document.body.classList.add('closing'); if (!music.paused) fadeMusic(0, 850); setTimeout(() => post('close'), 1000); };
+  $('#dlgYes').onclick = quitApp;
+  [['#dlgNo', 0], ['#dlgYes', 1]].forEach(([s, i]) => $(s).addEventListener('mouseenter', () => { if (dlgSel !== i) { dlgSel = i; sfx('move'); paintDlg(); } }));
+  let toastT; const toast = (t) => { const e = $('#toast'); e.textContent = t; e.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => e.classList.remove('show'), 2400); };
+
+  /* ───── botones de la esquina ───── */
+  $('#bMin').onclick = () => post('minimize');
+  $('#bClose').onclick = () => askQuit();
+  $('#bFull').onclick = () => post('toggleFull');
+  $('#bMusic').onclick = () => { cfg.music = cfg.music === 'on' ? 'off' : 'on'; applyKey('music'); save(); sfx('tick'); };
+  $('#bGear').onclick = () => { if (screen === 'panel' && panel === 'settings') return; fsel = -1; paintFootSel(); document.body.classList.remove('infoot'); openPanel('settings'); sfx('ok'); };
+
+  /* ───── lanzar el juego ───── */
+  const launch = () => {
+    if (screen === 'launch' || screen === 'closing') return;
+    if (!st.dolphinOk || (cfg.text === 'es' ? !st.esOk : !st.origOk)) { sfx('back'); toast(!st.dolphinOk ? L().noDolphin : cfg.text === 'es' ? L().noES : L().noOrig); return; }
+    screen = 'launch'; sfx('start');
+    const Lc = $('#launch'); Lc.classList.remove('show'); void Lc.offsetWidth; Lc.classList.add('show');
+    const l = L(); $('#launchT').textContent = l.launching;
+    $('#launchS').textContent = l.steps[l.steps.length - 1];   // una sola línea, aparece con suavidad
+    gameOn = true; if (!music.paused) fadeMusic(0, 900, () => music.pause());
+    setTimeout(() => { if (host) post('play', { config: cfg }); else setTimeout(() => onClosed({ playtime: cfg.playtime }), 2500); }, 900);
+  };
+  const onClosed = (d) => {
+    if (d && d.playtime != null) cfg.playtime = d.playtime;
+    gameOn = false; $('#launch').classList.remove('show'); screen = panel ? 'panel' : 'menu'; paintFoot(); syncMusic();
+    const v = $('#veil'); v.classList.add('slow'); requestAnimationFrame(() => requestAnimationFrame(() => v.classList.remove('on')));
+  };
+
+  /* ───── entrada: teclado ───── */
+  const input = (k) => {
+    if (introOn) { endIntro(); return; }
+    if (capture) { if (k === 'back') finishCapture(null); return; }
+    if (screen === 'launch') return;
+    if (screen === 'dlg') {
+      if (k === 'left' || k === 'right') { dlgSel = 1 - dlgSel; sfx('move'); paintDlg(); }
+      else if (k === 'ok') (dlgSel ? $('#dlgYes') : $('#dlgNo')).click();
+      else if (k === 'back') { sfx('back'); closeDlg(); }
+      return;
+    }
+    if (screen === 'foot') {
+      const vis = (i) => $(FOOT[i][0]).offsetParent !== null;
+      if (k === 'left') { let i = fsel - 1; while (i >= 0 && !vis(i)) i--; if (i >= 0) { fsel = i; sfx('move'); paintFootSel(); } }
+      else if (k === 'right') { let i = fsel + 1; while (i < FOOT.length && !vis(i)) i++; if (i < FOOT.length) { fsel = i; sfx('move'); paintFootSel(); } }
+      else if (k === 'up' || k === 'back') { fsel = -1; paintFootSel(); screen = 'menu'; document.body.classList.remove('infoot'); lastDesc = null; sfx('move'); paintMenu(); }
+      else if (k === 'ok') $(FOOT[fsel][0]).click();
+      return;
+    }
+    if (screen === 'menu') {
+      if (k === 'up') { msel = (msel + MENU.length - 1) % MENU.length; sfx('move'); paintMenu(); }
+      else if (k === 'down' && msel === MENU.length - 1) { screen = 'foot'; document.body.classList.add('infoot'); fsel = [...FOOT].findIndex(([id]) => $(id).offsetParent !== null); if (fsel < 0) fsel = 0; sfx('move'); paintFootSel(); }
+      else if (k === 'down') { msel = (msel + 1) % MENU.length; sfx('move'); paintMenu(); }
+      else if (k === 'ok' || k === 'right') choose();
+      else if (k === 'back') { sfx('ok'); askQuit(); }
+      else if (k === 'y') { openPanel('settings'); sfx('ok'); }
+      return;
+    }
+    // paneles
+    if (k === 'back') { closePanel(); return; }
+    if (panel === 'play') {
+      const list = playRows();
+      if (k === 'up') { prow = (prow + list.length - 1) % list.length; sfx('move'); markPlay(); }
+      else if (k === 'down') { prow = (prow + 1) % list.length; sfx('move'); markPlay(); }
+      else if (k === 'left' || k === 'right') { if (prow < 3 && stepValue(list[prow], k === 'left' ? -1 : 1)) paintPlay(true); }
+      // A / Enter: la opción ya está aplicada (◄ ►), así que confirma y pasa a la siguiente fila; en COMENZAR, inicia
+      else if (k === 'ok') { if (prow === 3) launch(); else { prow++; sfx('ok'); markPlay(); } }
+      else if (k === 'x') launch();
+      return;
+    }
+    if (panel === 'settings') {
+      const list = settingsRows();
+      if (k === 'lb') switchTab(-1); else if (k === 'rb') switchTab(1);
+      else if (k === 'up') { row = (row + list.length - 1) % list.length; sfx('move'); markRows($('#rows'), row, list); }
+      else if (k === 'down') { row = (row + 1) % list.length; sfx('move'); markRows($('#rows'), row, list); }
+      else if (k === 'left' || k === 'right') { const s = stepValue(list[row], k === 'left' ? -1 : 1); if (s === 'slider') paintSlider($('#rows').querySelectorAll('.row')[row], list[row]); else if (s) paintSettings(true); }
+      else if (k === 'ok') { const r = list[row]; if (!r) return; if (r.type === 'bind') { if (performance.now() - capEnd > 400) startCapture(r.dev, r.act); } else if (r.type === 'action') r.run(); else { row = (row + 1) % list.length; sfx('ok'); markRows($('#rows'), row, list); } }
+      return;
+    }
+    if (panel === 'ach') {
+      const n = $('#achBody').querySelectorAll('.ach').length;
+      if (!n) { if (k === 'ok') { const u = $('#raUser'); if (u && !u.value) u.focus(); else if ($('#raGo')) $('#raGo').click(); } return; }
+      const old = achSel;
+      if (k === 'left') achSel = Math.max(0, achSel - 1); else if (k === 'right') achSel = Math.min(n - 1, achSel + 1);
+      else if (k === 'up') achSel = achSel >= 2 ? achSel - 2 : achSel; else if (k === 'down') achSel = Math.min(n - 1, achSel + 2);
+      if (old !== achSel) { sfx('move'); markAch(); }
+      return;
+    }
+    if (panel === 'credits') { if (k === 'up') $('#credBody').scrollTop -= 60; else if (k === 'down') $('#credBody').scrollTop += 60; return; }
+    if (panel === 'extras') {
+      if (k === 'lb' || k === 'left') switchXtab(-1); else if (k === 'rb' || k === 'right') switchXtab(1);
+      else if (k === 'up') $('#xrows').scrollTop -= 60; else if (k === 'down') $('#xrows').scrollTop += 60;
+    }
+  };
+  const KEYS = { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right', w: 'up', s: 'down', a: 'left', d: 'right', W: 'up', S: 'down', A: 'left', D: 'right',
+    Enter: 'ok', ' ': 'ok', Escape: 'back', Backspace: 'back', q: 'lb', e: 'rb', Q: 'lb', E: 'rb' };
+  addEventListener('keydown', (e) => {
+    if (e.target && e.target.tagName === 'INPUT') { if (e.key === 'Escape') { e.target.blur(); } else return; }
+    if (capture && capture.dev === 'kb') {
+      e.preventDefault();
+      if (e.code === 'Escape' && !e.repeat) { finishCapture(null); return; }
+      const v = codeToDI(e.code); if (v) finishCapture(v); return;
+    }
+    if (capture && capture.dev === 'pad') { if (e.key === 'Escape') { e.preventDefault(); finishCapture(null); } return; }
+    if (e.key === 'F11') { e.preventDefault(); post('toggleFull'); return; }
+    const k = KEYS[e.key];
+    if (k) { e.preventDefault(); device('kb'); if (e.repeat && !['up', 'down', 'left', 'right'].includes(k)) return; input(k); }
+  });
+  let mAt = null;
+  addEventListener('mousemove', (e) => { if (mAt && Math.abs(e.screenX - mAt[0]) + Math.abs(e.screenY - mAt[1]) > 10) device('kb'); mAt = [e.screenX, e.screenY]; });
+
+  /* ───── entrada: mando (Gamepad API) ───── */
+  const held = {}, repeatAt = {}, padRest = {}; let padPrev = [];
+  const poll = () => {
+    const pads = navigator.getGamepads ? [...navigator.getGamepads()].filter(Boolean) : [];
+    const p = pads[0];
+    if (p) {
+      const ax = p.axes[0] || 0, ay = p.axes[1] || 0, b = (i) => p.buttons[i] && p.buttons[i].pressed;
+      const s = { up: b(12) || ay < -.55, down: b(13) || ay > .55, left: b(14) || ax < -.55, right: b(15) || ax > .55,
+        ok: b(0), back: b(1), x: b(2), y: b(3), lb: b(4), rb: b(5) };
+      if (p.mapping !== 'standard') {                 // mandos genéricos (DirectInput)
+        s.ok = s.ok || b(2); s.lb = s.lb || b(6); s.rb = s.rb || b(7);
+        const rest = padRest[p.index] || (padRest[p.index] = p.axes.map((v) => v));
+        const axOk = (i) => i < p.axes.length && Math.abs(rest[i] || 0) < .2;
+        for (const [ix, iy] of [[4, 5], [6, 7]]) {
+          if (axOk(ix)) { const v = p.axes[ix]; if (v < -.55) s.left = true; if (v > .55) s.right = true; }
+          if (axOk(iy)) { const v = p.axes[iy]; if (v < -.55) s.up = true; if (v > .55) s.down = true; }
+        }
+        if (p.axes.length > 9) { const h = p.axes[9]; if (h >= -1.05 && h <= 1.05) { const d = Math.round((h + 1) / (2 / 7));
+          if (d === 7 || d <= 1) s.up = true; if (d >= 1 && d <= 3) s.right = true; if (d >= 3 && d <= 5) s.down = true; if (d >= 5 && d <= 7) s.left = true; } }
+      }
+      const raw = PAD_IDX.map((_, j) => !!b(j));
+      if (raw.some(Boolean) || Math.abs(ax) > .5 || Math.abs(ay) > .5) device('pad');
+      const capWas = !!capture;
+      if (capture && capture.dev === 'pad') { const j = raw.findIndex((v, n) => v && !padPrev[n]); if (j >= 0) finishCapture(PAD_IDX[j]); }
+      padPrev = raw;
+      if (capWas || capture || performance.now() - capEnd < 250) { for (const k in s) held[k] = s[k]; requestAnimationFrame(poll); return; }
+      const now = performance.now();
+      for (const k in s) {
+        if (s[k] && !held[k]) { held[k] = true; repeatAt[k] = now + 380; input(k); }
+        else if (s[k] && ['up', 'down', 'left', 'right'].includes(k) && now > repeatAt[k]) { repeatAt[k] = now + 110; input(k); }
+        else if (!s[k]) held[k] = false;
+      }
+    }
+    requestAnimationFrame(poll);
+  };
+  addEventListener('gamepadconnected', () => { padSeen = true; paintFoot(); });
+  requestAnimationFrame(poll);
+
+  /* ───── fondo vivo: agua (WebGL) ───── */
+
+  const glc = $('#bgGL'); let gl = null, glProg = null, glT0 = performance.now(), glOk = false;
+  try { gl = glc.getContext('webgl', { premultipliedAlpha: false, antialias: false }); } catch (e) {}
+  const loadImg = (src) => new Promise((ok, no) => { const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = src; });
+  if (gl) {
+    const VS = 'attribute vec2 p;varying vec2 uv;void main(){uv=vec2(p.x*.5+.5,.5-p.y*.5);gl_Position=vec4(p,0.,1.);}';
+    const FS = `precision mediump float;varying vec2 uv;uniform sampler2D bg;uniform sampler2D mk;uniform float t;
+      void main(){
+        float m=texture2D(mk,uv).r;
+        float d=mix(.55,1.35,uv.y);                       // perspectiva: ondas más finas al fondo
+        vec2 o;
+        o.x=sin(uv.y*240./d+t*1.6+sin(uv.x*18.+t*.45)*2.2)*.0012+sin(uv.x*85.+uv.y*160.-t*1.05)*.0006;
+        o.y=cos(uv.x*110.+uv.y*35.+t*1.25)*.0010*d;
+        vec4 c=texture2D(bg,uv+o*m);
+        float l=dot(c.rgb,vec3(.299,.587,.114));
+        float sp=smoothstep(.70,.96,l)*(.5+.5*sin(t*3.6+uv.x*640.+uv.y*1250.+sin(uv.y*90.+t)*3.))*m;
+        c.rgb+=sp*.20*vec3(.82,.95,1.);
+        c.rgb+=m*.035*vec3(.55,.82,1.)*(.5+.5*sin(uv.x*26.-t*.55+sin(uv.y*22.+t*.35)*1.6));
+        gl_FragColor=vec4(c.rgb,1.);
+      }`;
+    const sh = (type, src) => { const x = gl.createShader(type); gl.shaderSource(x, src); gl.compileShader(x); if (!gl.getShaderParameter(x, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(x)); return x; };
+    try {
+      glProg = gl.createProgram(); gl.attachShader(glProg, sh(gl.VERTEX_SHADER, VS)); gl.attachShader(glProg, sh(gl.FRAGMENT_SHADER, FS)); gl.linkProgram(glProg); gl.useProgram(glProg);
+      const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(glProg, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      const tex = (img, unit) => { const tx = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, tx);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGB, gl.RGB, gl.UNSIGNED_BYTE, img); };
+      Promise.all([loadImg('assets/bg.jpg'), loadImg('assets/anim/agua_mascara.png')]).then(([a, b]) => {
+        tex(a, 0); tex(b, 1); gl.uniform1i(gl.getUniformLocation(glProg, 'bg'), 0); gl.uniform1i(gl.getUniformLocation(glProg, 'mk'), 1);
+        glOk = true; requestAnimationFrame(glFrame);
+      }).catch((e) => { console.warn('fondo vivo', e); glc.style.display = 'none'; });
+    } catch (e) { console.warn('fondo vivo', e); glc.style.display = 'none'; }
+  } else glc.style.display = 'none';
+  const uT = () => gl.getUniformLocation(glProg, 't');
+  let glStill = false;
+  const glFrame = () => {
+    const live = cfg.bgAnim === 'on' && !gameOn && !document.hidden;
+    if (live || !glStill) {
+      gl.viewport(0, 0, glc.width, glc.height);
+      gl.uniform1f(uT(), live ? (performance.now() - glT0) / 1000 : 0);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4); glStill = !live;
+    }
+    requestAnimationFrame(glFrame);
+  };
+
+  /* ───── luciérnagas y pétalos ───── */
+  const cv = $('#fx'), cx = cv.getContext('2d'); const P = [];
+  const spawn = (init) => {
+    const petal = Math.random() < .22;
+    P.push({ petal, x: petal ? 500 + Math.random() * 900 : Math.random() * 1280, y: init ? Math.random() * 720 : (petal ? -20 : 740),
+      vx: petal ? -(.25 + Math.random() * .45) : (Math.random() - .5) * .25, vy: petal ? .3 + Math.random() * .4 : -(.12 + Math.random() * .3),
+      r: petal ? 3 + Math.random() * 3.5 : .8 + Math.random() * 1.8, a: Math.random() * 6.28, va: (Math.random() - .5) * .04, ph: Math.random() * 6.28 });
+  };
+  for (let i = 0; i < 54; i++) spawn(true);
+  const frame = () => {
+    cx.clearRect(0, 0, 1280, 720);
+    if (cfg.particles === 'on') {
+      for (let i = P.length - 1; i >= 0; i--) {
+        const p = P[i]; p.ph += .018; p.a += p.va; p.x += p.vx + Math.sin(p.ph) * .3; p.y += p.vy;
+        if (p.y > 750 || p.y < -30 || p.x < -30 || p.x > 1310) { P.splice(i, 1); spawn(false); continue; }
+        cx.save(); cx.translate(p.x, p.y);
+        if (p.petal) {
+          cx.rotate(p.a); cx.scale(1, .45 + Math.abs(Math.sin(p.ph)) * .55);
+          cx.fillStyle = 'rgba(214,196,255,.55)'; cx.beginPath(); cx.ellipse(0, 0, p.r, p.r * .5, 0, 0, 6.28); cx.fill();
+        } else {
+          const fl = .35 + Math.sin(p.ph * 2.6) * .3;
+          const g = cx.createRadialGradient(0, 0, 0, 0, 0, p.r * 6);
+          g.addColorStop(0, `rgba(190,232,255,${Math.max(0, fl)})`); g.addColorStop(1, 'rgba(120,200,255,0)');
+          cx.fillStyle = g; cx.beginPath(); cx.arc(0, 0, p.r * 6, 0, 6.28); cx.fill();
+        }
+        cx.restore();
+      }
+    }
+    requestAnimationFrame(frame);
+  };
+  requestAnimationFrame(frame);
+
+  /* ───── mensajes del launcher ───── */
+  if (host) host.addEventListener('message', (ev) => {
+    let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+    if (m.type === 'state') {
+      const d = m.data || {}; st = d;
+      cfg = Object.assign({}, DEF, d.config || {}); if (cfg.fpsMig !== 1) { cfg.fps60 = 'off'; cfg.fpsMig = 1; save(); } cfg.padBinds = cfg.padBinds || {}; cfg.kbBinds = cfg.kbBinds || {}; for (const k of Object.keys(cfg.kbBinds)) if (cfg.kbBinds[k] === 'ESCAPE') delete cfg.kbBinds[k];
+      LG = d.logros || null; if (panel === 'ach') paintAch();
+      document.body.classList.toggle('full', !!d.fullscreen);
+      applyKey(); if (introOn === null) startIntro();
+    }
+    if (m.type === 'fullscreen') document.body.classList.toggle('full', !!m.data);
+    if (m.type === 'gameStarted') {}
+    if (m.type === 'gameReady') {                // el juego ya tiene ventana: fundir a negro y que el launcher se oculte
+      const v = $('#veil'); v.classList.remove('slow'); v.classList.add('on');
+      setTimeout(() => { if (gameOn) post('hideLauncher'); }, 850);
+    }
+    if (m.type === 'prepReturn') {               // volviendo del juego: todo en negro y sin rastro de la pantalla de inicio
+      const v = $('#veil'), Lc = $('#launch');
+      v.classList.add('now', 'on'); Lc.classList.add('now'); Lc.classList.remove('show'); $('#launchS').textContent = '';
+      void v.offsetWidth; v.classList.remove('now'); Lc.classList.remove('now');
+    }
+    if (m.type === 'gameClosed') onClosed(m.data);
+    if (m.type === 'cfgPatch') Object.assign(cfg, m.data || {});
+    if (m.type === 'raProgress') { const e = $('#raMsg'), d = m.data || {}; if (e) e.textContent = d.step === 'login' ? L().raLogin : d.step === 'set' ? L().raSet : L().raBadges.replace('{0}', d.done).replace('{1}', d.total); }
+    if (m.type === 'raDone') { raBusy = false; if (!m.data.ok) { const e = $('#raMsg'); if (e) { e.className = 'msg err'; e.textContent = L().raFail.replace('{0}', m.data.error || '?'); } const g = $('#raGo'); if (g) g.disabled = false; sfx('back'); } else sfx('start'); }
+    if (m.type === 'logro') { if (LG) { LG.unlocked = LG.unlocked || {}; LG.unlocked[m.data.id] = m.data.date; } if (panel === 'ach') paintAch(); }
+    if (m.type === 'error') { onClosed(); toast(String(m.data || 'Error')); sfx('back'); }
+  });
+
+  /* ───── intro ───── */
+  let introOn = null, introT;
+  const intro = $('#intro');
+  const showAll = () => { document.body.classList.add('ready'); syncMusic(); };
+  const endIntro = () => { if (!introOn) return; introOn = false; clearTimeout(introT); intro.classList.add('gone'); showAll(); };
+  const startIntro = () => {
+    if (cfg.intro === 'on' && !/nointro/.test(location.hash)) { introOn = true; introT = setTimeout(endIntro, 3200); }
+    else { introOn = false; intro.classList.add('gone'); intro.style.transition = 'none'; showAll(); }
+  };
+  intro.addEventListener('click', () => endIntro());
+  addEventListener('click', () => { audio(); if (musicOk && cfg.music === 'on' && music.paused && !gameOn) syncMusic(); }, { once: true });
+
+  buildMenu(); applyKey();
+  if (host) post('init'); else { startIntro(); }
+  window.__fd = { input, cfg, openPanel, closePanel, launch };
+})();
+</script>
+</body>
+</html>

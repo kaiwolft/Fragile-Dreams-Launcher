@@ -1,0 +1,66 @@
+================================================================================
+Traducción al Castellano de Fragile Dreams: Farewell Ruins of the Moon para Wii
+por xulikotony, CUE, TheKiller, Klint, Pacochan, GameZelda e IlDucci
+================================================================================
+Versión 1.1 - http://tiovictor.romhackhispano.org
+================================================================================
+ESTE PARCHE NO ESTÁ RELACIONADO CON RISING STAR GAMES, NAMCO BANDAI GAMES NI CON
+BLOGOCIO MEDIA SL. NO NOS HACEMOS RESPONSABLES DE LOS DAÑOS QUE TENGAN LUGAR EN
+VUESTRAS CONSOLAS/DISCOS DE JUEGO. ESTE PARCHE NO TIENE NINGÚN TIPO DE GARANTÍA.
+================================================================================
+Os presentamos por fin el proyecto de traducción al Castellano de Fragile Dreams
+Farewell Ruins of the Moon para Wii, completado. Debo admitir que este proyecto
+ha resultado ser, además de tener el récord personal del proyecto que menos ha
+tardado, el más movidito de todos, entre los problemas del proyecto original y
+algunos asuntillos que hemos padecido todos los miembros clave del equipo.
+
+Este parche está basado en la versión PAL del juego, así que necesitaréis una
+copia europea para jugar a la versión en la que hemos trabajado. Es bastante
+probable que la traducción funcione en la versión NTSC-USA, pero no está probado
+ni vamos a dar soporte sobre esta versión (Básicamente porque no tenemos copias
+de ella). No funcionará sobre la versión NTSC-Japón, pero eso no es un problema
+ya que el juego trae oficialmente el doblaje japonés, para aquellos que no les
+guste el doblaje estadounidense.
+
+Para jugar a esta traducción necesitaréis la última versión del programa
+Riivolution, la v1.04. Riivolution es un sistema que permite jugar con la
+traducción mediante una copia original del juego, con sólo introducir los datos
+en una tarjeta SD o en una memoria USB. Este sistema no es compatible con los
+cargadores de backups por software, y está hecho aposta para que se juegue con
+copias legales.
+
+Para utilizar Riivolution necesitaréis una consola Wii con o bien el Homebrew
+Channel instalado, o al menos la posibilidad de ejecutar el boot.elf que viene
+con Riivolution. Para descargaros Riivolution y si tenéis problemas antes de
+poder jugar al juego en sí, dirigiros a http://rvlution.net.
+================================================================================
+Cómo jugar al parche del juego:
+ 1º - Instala Riivolution en tu consola Wii siguiendo los pasos de su página
+      web. No daremos soporte sobre Riivolution en sí.
+ 2º - Copia los contenidos del archivo de la traducción en la raíz de tu tarjeta
+      SD o tu memoria USB, y luego introdúcelos en la consola.
+ 3º - Arranca tu consola Wii, y ejecuta Riivolution (Ya sea mediante su canal
+      o a través del Homebrew Channel)
+ 4º - Espera a que Riivolution muestre el nombre del juego y la opción de jugar
+      con la traducción. Asegúrate de que la traducción está ACTIVADA y luego
+	  pulsa en LAUNCH.
+ 5º - Disfruta del juego traducido al Castellano.
+================================================================================
+Registro de versiones:
+v1.0 - Primera versión publicada, todos los textos del juego traducidos al
+       Castellano. Casi todos los gráficos también están traducidos, a excepción
+	   de parte de los textos en japonés que contienen los mapas del juego.
+	   Hemos conseguido traducir un buen puñado de estos, pero hay otros que
+	   se nos han resistido. Es posible que saquemos una nueva versión para
+	   rematar este detalle, pero el resto del juego es entendible por completo.
+v1.1 - Segunda versión publicada, hemos corregido ya más tranquilamente todos
+       los fallitos de gramática/ortografía/expresión, y también hemos traducido
+	   los textos en japonés que aparecían en la ventana de mapas. Esta debería
+	   ser la versión final, a menos que surjan fallos de importancia.
+================================================================================
+Agradecimientos: A yS, Raizing, Luffy y Ayato por la ayuda con el japonés, y a
+                 Aaron, Tempus y el equipo que ha creado el sistema Riivolution.
+================================================================================
+¿Sugerencias, informes de fallos, dudas...?
+Coméntalas en http://tiovictor.romhackhispano.org
+================================================================================

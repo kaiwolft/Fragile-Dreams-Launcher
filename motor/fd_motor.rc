@@ -1,0 +1,19 @@
+1 ICON "loto.ico"
+1 VERSIONINFO
+FILEVERSION 1,0,0,0
+PRODUCTVERSION 1,0,0,0
+BEGIN
+ BLOCK "StringFileInfo"
+ BEGIN
+  BLOCK "0C0A04B0"
+  BEGIN
+   VALUE "FileDescription", "Fragile Dreams - motor (Dionixu Launcher)"
+   VALUE "ProductName", "Fragile Dreams: Farewell Ruins of the Moon"
+   VALUE "FileVersion", "1.0"
+  END
+ END
+ BLOCK "VarFileInfo"
+ BEGIN
+  VALUE "Translation", 0x0C0A, 1200
+ END
+END

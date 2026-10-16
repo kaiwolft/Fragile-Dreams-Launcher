@@ -1,0 +1,65 @@
+FRAGILE DREAMS: FAREWELL RUINS OF THE MOON - Dionixu's Launcher
+================================================================
+
+AVISO LEGAL - LEE ANTES DE INSTALAR
+  * Este instalador NO incluye el juego. Solo contiene el launcher, el motor, las mejoras y las herramientas.
+  * Necesitas UNA copia ORIGINAL de Fragile Dreams para Wii, extraida por ti de tu propio disco:
+      - VERSION EUROPEA (PAL, ID R2GP99). La americana (R2GEXJ) y la japonesa NO sirven.
+  * La traduccion al castellano 1.1 (TioVictor / Romhack Hispano) YA VIENE INTEGRADA: el instalador la aplica
+    sobre tu copia. No necesitas Riivolution ni parches aparte.
+  * El instalador comprueba tu copia (ID y huella MD5) y SOLO funcionara con tu copia oficial sin modificar.
+  * No se acepta ni se fomenta la pirateria. Necesitas tu copia oficial. No descargues el juego de internet.
+  * Proyecto de aficionados sin fines de lucro, sin relacion con Namco Bandai, tri-Crescendo, Rising Star Games ni XSEED.
+
+INSTALACION EN WINDOWS (10 u 11, 64 bits)
+  Que necesitas:
+    - Unos 6 GB libres en el disco donde instales.
+    - Tu copia europea del juego en formato .rvz, .iso, .wbfs, .wia o .gcz (copiada de tu disco, por ejemplo con CleanRip).
+  Pasos:
+    1. Descomprime el .zip completo en tu PC (no ejecutes el instalador desde dentro del .zip).
+    2. Abre "Instalar Fragile Dreams.exe".
+       Si Windows SmartScreen avisa: "Mas informacion" -> "Ejecutar de todas formas".
+    3. Elige el idioma (Espanol / English) y acepta el aviso legal.
+    4. Elige tu copia europea (R2GP99). Se comprueba en el momento.
+    5. Elige la carpeta de instalacion (por defecto: Documentos\Fragile Dreams) y los accesos directos.
+    6. Pulsa INSTALAR. Tarda de 5 a 15 minutos. Al terminar, el launcher se abre solo en una ventana.
+  Que se instala:
+    launcher\     launcher (ajustes, controles, logros, idioma, musica)
+    motor\        motor propio: camara con stick derecho y raton, movimiento 360, 60 FPS opcionales
+    core\         nucleo de Dolphin (libretro) que usa el motor
+    Dolphin-x64\  Dolphin portable (tus partidas se guardan en Dolphin-x64\User\Wii)
+    juego\        EU_ESPANOL (traduccion integrada) y EU_ORIGINAL (ingles, frances, aleman); los archivos comunes no ocupan doble
+    AGREGAR_A_STEAM.bat  agrega el juego a Steam con su icono y su arte
+  Durante el juego: L3 + R3 (mando) o F1 (teclado) abre el menu de pausa (volumen y volver al launcher).
+  Logros: se descargan una vez con tu cuenta gratuita de RetroAchievements y se guardan al guardar la partida.
+  Si algo falla: envia el archivo instalacion.log (en la carpeta de instalacion) o launcher\data\launcher.log.
+  Desinstalar: borra la carpeta de instalacion y los accesos directos.
+
+------------------------------------------------------------------------------
+
+LEGAL NOTICE - READ BEFORE INSTALLING
+  * This installer does NOT include the game. It only contains the launcher, the engine, the enhancements and the tools.
+  * You need ONE ORIGINAL copy of Fragile Dreams for Wii, dumped by you from your own disc:
+      - EUROPEAN VERSION (PAL, ID R2GP99). The US (R2GEXJ) and Japanese versions will NOT work.
+  * The Spanish fan translation 1.1 (TioVictor / Romhack Hispano) is BUILT IN: the installer applies it to your copy.
+    The original English / French / German text stays available in Settings.
+  * The installer checks your copy (ID and MD5 fingerprint) and will ONLY work with your official, unmodified copy.
+  * Piracy is not accepted or encouraged. You need your official copy. Do not download the game from the internet.
+  * Non-profit fan project, not affiliated with Namco Bandai, tri-Crescendo, Rising Star Games or XSEED.
+
+INSTALLING ON WINDOWS (10 or 11, 64-bit)
+  You need:
+    - About 6 GB free on the target drive.
+    - Your European copy of the game as .rvz, .iso, .wbfs, .wia or .gcz (dumped from your disc, e.g. with CleanRip).
+  Steps:
+    1. Extract the whole .zip to your PC (do not run the installer from inside the .zip).
+    2. Open "Instalar Fragile Dreams.exe".
+       If Windows SmartScreen warns you: "More info" -> "Run anyway".
+    3. Pick the language (Espanol / English) and accept the legal notice.
+    4. Pick your European copy (R2GP99). It is checked right away.
+    5. Pick the install folder (default: Documents\Fragile Dreams) and the shortcuts.
+    6. Press INSTALL. It takes 5 to 15 minutes. When it finishes, the launcher opens in a window.
+  In game: L3 + R3 (gamepad) or F1 (keyboard) opens the pause menu (volume and back to the launcher).
+  Achievements: downloaded once with your free RetroAchievements account; they are kept when you save your game.
+  If something fails: send instalacion.log (in the install folder) or launcher\data\launcher.log.
+  Uninstall: delete the install folder and the shortcuts.

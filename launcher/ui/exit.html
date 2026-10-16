@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Pausa</title>
+<style>
+@font-face{font-family:"FD Cinzel";src:url(fonts/Cinzel.ttf) format("truetype");font-weight:400 900}
+@font-face{font-family:"FD Cormorant";src:url(fonts/CormorantGaramond.ttf) format("truetype");font-weight:300 700}
+:root{--ink:#e8f0fb;--line:rgba(160,205,255,.34);--blue:#3d8fe6;--blue-d:#1d4f9e;--blue-l:#8fd2ff;--gold:#8fd2ff;--cream:#ffffff;
+  --display:"FD Cinzel","Cinzel",Georgia,serif;--body:"FD Cormorant","Cormorant Garamond",Georgia,serif}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:transparent;user-select:none;font-family:var(--body)}
+#veil{position:fixed;inset:0;background:radial-gradient(ellipse at center,rgba(5,12,30,.55) 0%,rgba(2,5,14,.9) 75%);opacity:0;transition:opacity .35s ease}
+#black{position:fixed;inset:0;background:#000;opacity:0;pointer-events:none;transition:opacity .45s ease}
+body.show #veil{opacity:1}
+body.out #black{opacity:1}
+#fx{position:fixed;inset:0;pointer-events:none;opacity:0;transition:opacity .6s ease}
+body.show #fx{opacity:1}
+#card{position:fixed;left:50%;top:50%;width:700px;padding:38px 46px 30px;transform:translate(-50%,-46%) scale(.96);opacity:0;
+  transition:opacity .35s ease, transform .45s cubic-bezier(.2,.8,.2,1);
+  background:rgba(7,16,36,.94);border:1px solid var(--line);outline:1px solid rgba(143,210,255,.35);outline-offset:5px;
+  box-shadow:0 0 0 1px rgba(190,230,255,.25),0 0 60px 12px rgba(90,170,255,.16),0 30px 80px rgba(0,0,0,.6);text-align:center}
+body.show #card{opacity:1;transform:translate(-50%,-50%) scale(1)}
+/* luz que recorre el borde */
+#card::before{content:"";position:absolute;inset:-3px;padding:2px;border-radius:2px;pointer-events:none;
+  background:conic-gradient(from var(--a,0deg),rgba(190,230,255,0) 0deg,rgba(190,230,255,.95) 30deg,rgba(190,230,255,0) 70deg,rgba(190,230,255,0) 180deg,rgba(200,180,255,.8) 210deg,rgba(190,230,255,0) 250deg);
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spin 4.5s linear infinite}
+@property --a{syntax:'<angle>';inherits:false;initial-value:0deg}
+@keyframes spin{to{--a:360deg}}
+.orn{display:block;margin:0 auto 12px}
+h1{margin:0 0 6px;font-family:var(--display);font-weight:400;font-size:26px;letter-spacing:6px;color:var(--ink)}
+p{margin:0 0 24px;font-size:18px;font-style:italic;color:#8fa3c0}
+.view{display:none}
+.view.on{display:block;animation:viewIn .28s ease}
+@keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+/* menú de pausa */
+.menu{display:flex;flex-direction:column;gap:10px;text-align:left;margin-top:18px}
+.item{position:relative;display:flex;align-items:center;gap:16px;min-height:54px;padding:8px 18px;border:1px solid rgba(160,205,255,.22);background:rgba(120,180,255,.05);transition:all .18s ease}
+.item .lbl{font-family:var(--display);font-size:16px;font-weight:400;letter-spacing:3px;color:#e8f0fb;white-space:nowrap}
+.item .sub{display:block;font-family:var(--body);font-size:14px;font-style:italic;font-weight:400;letter-spacing:0;color:#8fa3c0;margin-top:1px}
+.item.on{background:linear-gradient(90deg,rgba(29,79,158,.9),rgba(61,143,230,.75) 60%,rgba(29,79,158,.9));border-color:#8fd2ff;box-shadow:0 0 0 1px rgba(143,210,255,.85),0 0 22px 4px rgba(90,170,255,.3)}
+.item.on .lbl{color:var(--cream)} .item.on .sub{color:#d6e6fa}
+.item.on::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.28) 50%,transparent 70%);background-size:250% 100%;animation:sheen 1.8s ease-in-out infinite}
+/* barra de volumen */
+.slider{display:flex;align-items:center;gap:12px;flex:1;min-width:280px;margin-left:auto}
+.track{position:relative;flex:1;height:12px;border:1px solid rgba(160,205,255,.34);background:rgba(120,180,255,.08);touch-action:none}
+.fill{position:absolute;left:0;top:0;bottom:0;background:linear-gradient(90deg,var(--blue-d),var(--blue-l))}
+.item.on .fill{background:linear-gradient(90deg,#8fd2ff,#ffffff)}
+.ticks{position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(160,205,255,.18) calc(10% - 1px) 10%);pointer-events:none}
+.knob{position:absolute;top:50%;width:18px;height:18px;margin:-9px 0 0 -9px;transform:rotate(45deg);background:var(--cream);border:1px solid var(--blue-d);box-shadow:0 0 8px rgba(150,215,255,.8)}
+.val{min-width:52px;text-align:right;font-family:var(--display);font-size:15px;letter-spacing:1px;color:#e8f0fb}
+.item.on .val{color:var(--cream)}
+.arrow{font-size:12px;color:#d6e6fa;opacity:0}
+.item.on .arrow{opacity:.9}
+/* confirmación */
+.opts{display:flex;gap:22px;justify-content:center}
+button{position:relative;min-width:170px;height:48px;font-family:var(--display);font-size:17px;font-weight:400;letter-spacing:4px;
+  color:#e8f0fb;background:rgba(120,180,255,.05);border:1px solid var(--line);transition:all .18s ease}
+button.on{color:var(--cream);background:linear-gradient(180deg,rgba(61,143,230,.85),rgba(29,79,158,.85));border-color:#8fd2ff;
+  box-shadow:0 0 0 1px rgba(143,210,255,.85),0 0 22px 4px rgba(90,170,255,.4);transform:translateY(-1px)}
+button.on::after{content:"";position:absolute;inset:0;background:linear-gradient(100deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);background-size:250% 100%;animation:sheen 1.8s ease-in-out infinite}
+@keyframes sheen{from{background-position:120% 0}to{background-position:-120% 0}}
+.hint{margin-top:22px;font-family:var(--display);font-size:11px;letter-spacing:2px;color:#8fa3c0}
+/* cursor con la estética del juego (solo launcher y menú de pausa) */
+/* cursor propio: luz de luciérnaga (como el puntero del juego) */
+html,body,#stage{cursor:-webkit-image-set(url(assets/cursor.png) 1x,url(assets/cursor@2x.png) 2x) 16 16,default}
+button,.mi,.tab,.opt,.track,.bind,.pbtn,.iconbtn,.big,.item,[data-back]{cursor:-webkit-image-set(url(assets/cursor_on.png) 1x,url(assets/cursor_on@2x.png) 2x) 16 16,pointer}
+html.padmode,html.padmode *{cursor:none!important}
+</style>
+</head>
+<body>
+<div id="veil"></div>
+<canvas id="fx"></canvas>
+<div id="card" role="dialog" aria-labelledby="t">
+  <img class="orn" src="assets/lotus.png" alt="" style="width:64px;filter:drop-shadow(0 0 8px rgba(150,215,255,.9))">
+  <!-- menú de pausa -->
+  <div class="view on" id="vMenu">
+    <h1 id="mTitle">EN PAUSA</h1>
+    <div class="menu" id="menu">
+      <div class="item" data-i="0"><span class="lbl" id="lVol">VOLUMEN DEL JUEGO</span>
+        <div class="slider"><span class="arrow">◄</span><div class="track" id="track"><div class="ticks"></div><div class="fill" id="fill"></div><div class="knob" id="knob"></div></div><span class="arrow">►</span><span class="val" id="val">100%</span></div></div>
+      <div class="item" data-i="1"><span class="lbl" id="lCont">CONTINUAR</span></div>
+      <div class="item" data-i="2"><span class="lbl"><span id="lExit">VOLVER AL LAUNCHER</span><span class="sub" id="lExitSub">El progreso no guardado se perderá.</span></span></div>
+    </div>
+    <div class="hint" id="hMenu">▲ ▼ ELEGIR · ◄ ► VOLUMEN · A ACEPTAR · B CONTINUAR</div>
+  </div>
+  <!-- confirmación -->
+  <div class="view" id="vAsk">
+    <h1 id="t">¿Quieres salir y volver al launcher?</h1>
+    <p id="sub">El progreso no guardado se perderá.</p>
+    <div class="opts">
+      <button id="yes">SÍ</button>
+      <button id="no" class="on">NO</button>
+    </div>
+    <div class="hint" id="hint">◄ ► ELEGIR · A ACEPTAR · B CANCELAR</div>
+  </div>
+</div>
+<div id="black"></div>
+<script>
+(() => {
+  const host = window.fdHost;
+  const $ = (id) => document.getElementById(id);
+  const send = (cmd, extra) => host && host.postMessage(JSON.stringify(Object.assign({ cmd }, extra || {})));
+  const T = {
+    es: { title: 'EN PAUSA', vol: 'VOLUMEN DEL JUEGO', cont: 'CONTINUAR', exit: 'VOLVER AL LAUNCHER', lost: 'El progreso no guardado se perderá.',
+      hMenu: '▲ ▼ ELEGIR · ◄ ► VOLUMEN · A ACEPTAR · B CONTINUAR', ask: '¿Quieres salir y volver al launcher?', yes: 'SÍ', no: 'NO', hAsk: '◄ ► ELEGIR · A ACEPTAR · B CANCELAR',
+      hMenuK: '▲ ▼ ELEGIR · ◄ ► VOLUMEN · ENTER ACEPTAR · ESC CONTINUAR', hAskK: '◄ ► ELEGIR · ENTER ACEPTAR · ESC CANCELAR' },
+    en: { title: 'PAUSED', vol: 'GAME VOLUME', cont: 'CONTINUE', exit: 'BACK TO LAUNCHER', lost: 'Any unsaved progress will be lost.',
+      hMenu: '▲ ▼ SELECT · ◄ ► VOLUME · A CONFIRM · B CONTINUE', ask: 'Quit and return to the launcher?', yes: 'YES', no: 'NO', hAsk: '◄ ► CHOOSE · A CONFIRM · B CANCEL',
+      hMenuK: '▲ ▼ SELECT · ◄ ► VOLUME · ENTER CONFIRM · ESC CONTINUE', hAskK: '◄ ► CHOOSE · ENTER CONFIRM · ESC CANCEL' },
+    fr: { title: 'PAUSE', vol: 'VOLUME DU JEU', cont: 'CONTINUER', exit: 'RETOUR AU LAUNCHER', lost: 'Toute progression non sauvegardée sera perdue.',
+      hMenu: '▲ ▼ CHOISIR · ◄ ► VOLUME · A VALIDER · B CONTINUER', ask: 'Quitter et revenir au launcher ?', yes: 'OUI', no: 'NON', hAsk: '◄ ► CHOISIR · A VALIDER · B ANNULER',
+      hMenuK: '▲ ▼ CHOISIR · ◄ ► VOLUME · ENTRÉE VALIDER · ÉCHAP CONTINUER', hAskK: '◄ ► CHOISIR · ENTRÉE VALIDER · ÉCHAP ANNULER' }
+  };
+  let view = 'menu', msel = 1, sel = 1, open = false, locked = false, shownAt = 0, vol = 100;
+  const items = [...document.querySelectorAll('.item')];
+  const btn = [$('yes'), $('no')];
+  let ac = null;
+  const chime = (freqs, dur, vol) => { try { ac = ac || new AudioContext(); const t0 = ac.currentTime;
+    freqs.forEach((f, i) => { const o = ac.createOscillator(), g = ac.createGain(), t = t0 + i * .07; o.frequency.value = f;
+      g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+      o.connect(g).connect(ac.destination); o.start(t); o.stop(t + dur + .05); }); } catch (e) {} };
+  const SND = { move: [[1568], .35, .05], tick: [[2093], .18, .035], ok: [[1046.5, 1568, 2093], .8, .06], back: [[1174.7, 784], .5, .05] };
+  const play = (n) => { const s = SND[n]; if (s) chime(s[0], s[1], s[2]); };
+  const paint = () => {
+    items.forEach((it, i) => it.classList.toggle('on', i === msel));
+    btn.forEach((b, i) => b.classList.toggle('on', i === sel));
+    $('fill').style.width = vol + '%'; $('knob').style.left = vol + '%'; $('val').textContent = vol + '%';
+  };
+  const setView = (v) => { view = v; $('vMenu').classList.toggle('on', v === 'menu'); $('vAsk').classList.toggle('on', v === 'ask'); paint(); };
+  let volT = null;
+  const setVol = (v, quiet) => {
+    v = Math.max(0, Math.min(100, Math.round(v / 5) * 5)); if (v === vol) return;
+    vol = v; paint(); if (!quiet) play('tick');
+    clearTimeout(volT); volT = setTimeout(() => send('gvol', { value: vol }), 60);   // en vivo, sin saturar
+  };
+  const resume = () => { if (!open || locked) return; locked = true; play('back'); document.body.classList.remove('show'); setTimeout(() => send('exitNo'), 300); };
+  const leave = () => { if (!open || locked) return; locked = true; play('ok'); document.body.classList.add('out'); setTimeout(() => send('exitYes'), 450); };
+  const activate = () => {
+    if (view === 'menu') {
+      if (msel === 1) resume();
+      else if (msel === 2) { play('ok'); sel = 1; setView('ask'); }
+    } else if (sel === 0) leave(); else { play('back'); setView('menu'); }
+  };
+  // ratón
+  items.forEach((it, i) => {
+    it.addEventListener('mouseenter', () => { if (view === 'menu' && msel !== i) { msel = i; paint(); play('move'); } });
+    if (i > 0) it.addEventListener('click', () => { msel = i; activate(); });
+  });
+  btn.forEach((b, i) => { b.addEventListener('mouseenter', () => { if (sel !== i) { sel = i; paint(); play('move'); } }); b.addEventListener('click', () => { sel = i; activate(); }); });
+  const tr = $('track');
+  tr.addEventListener('pointerdown', (e) => {
+    tr.setPointerCapture(e.pointerId); msel = 0;
+    const at = (ev) => { const r = tr.getBoundingClientRect(); setVol(Math.max(0, Math.min(1, (ev.clientX - r.left) / r.width)) * 100, true); };
+    at(e);
+    const up = () => { tr.removeEventListener('pointermove', at); tr.removeEventListener('pointerup', up); play('tick'); };
+    tr.addEventListener('pointermove', at); tr.addEventListener('pointerup', up);
+  });
+  // mando (vía puente) y teclado
+  const key = (k) => {
+    if (!open || locked) return;
+    if (view === 'menu') {
+      if (k === 'UP') { msel = (msel + 2) % 3; paint(); play('move'); }
+      if (k === 'DOWN') { msel = (msel + 1) % 3; paint(); play('move'); }
+      if ((k === 'LEFT' || k === 'RIGHT') && msel === 0) setVol(vol + (k === 'LEFT' ? -5 : 5));
+      if (k === 'A') activate();
+      if (k === 'B') resume();
+    } else {
+      if (k === 'LEFT' || k === 'RIGHT') { const n = k === 'LEFT' ? 0 : 1; if (n !== sel) { sel = n; paint(); play('move'); } }
+      if (k === 'A') activate();
+      if (k === 'B') { play('back'); setView('menu'); }
+    }
+  };
+  let curL = T.es;
+  const padMode = (on) => {
+    document.documentElement.classList.toggle('padmode', on);
+    $('hMenu').textContent = on ? curL.hMenu : curL.hMenuK; $('hint').textContent = on ? curL.hAsk : curL.hAskK;
+  };
+  let mAt = null;
+  addEventListener('mousemove', (e) => { if (mAt && Math.abs(e.screenX - mAt[0]) + Math.abs(e.screenY - mAt[1]) > 12) padMode(false); mAt = [e.screenX, e.screenY]; });
+  addEventListener('keydown', (e) => {
+    const m = { ArrowLeft: 'LEFT', ArrowRight: 'RIGHT', ArrowUp: 'UP', ArrowDown: 'DOWN', a: 'LEFT', d: 'RIGHT', w: 'UP', s: 'DOWN', Enter: 'A', ' ': 'A', Escape: 'B', Backspace: 'B' };
+    if (!m[e.key]) return;
+    e.preventDefault(); if (document.documentElement.classList.contains('padmode')) padMode(false);
+    if (performance.now() - shownAt < 350) return;                      // la misma pulsación que abrió el menú no lo cierra
+    if (e.repeat && !['LEFT', 'RIGHT', 'UP', 'DOWN'].includes(m[e.key])) return;
+    key(m[e.key]);
+  });
+  if (host) host.addEventListener('message', (ev) => {
+    let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+    if (m.type === 'show') {
+      const L = curL = T[(m.data && m.data.lang) || 'es'] || T.es;
+      $('mTitle').textContent = L.title; $('lVol').textContent = L.vol; $('lCont').textContent = L.cont; $('lExit').textContent = L.exit; $('lExitSub').textContent = L.lost;
+      $('hMenu').textContent = L.hMenu; $('t').textContent = L.ask; $('sub').textContent = L.lost; btn[0].textContent = L.yes; btn[1].textContent = L.no; $('hint').textContent = L.hAsk;
+      document.documentElement.lang = (m.data && m.data.lang) || 'es';
+      vol = Math.max(0, Math.min(100, parseInt((m.data && m.data.gvol) || '100', 10)));
+      padMode(!(m.data && m.data.via === 'kb')); mAt = null;
+      msel = 1; sel = 1; setView('menu'); shownAt = performance.now(); locked = false; open = true;
+      document.body.classList.remove('out'); requestAnimationFrame(() => document.body.classList.add('show'));
+    }
+    if (m.type === 'hide') { open = false; document.body.classList.remove('show', 'out'); }
+    if (m.type === 'btn') { if (!document.documentElement.classList.contains('padmode')) padMode(true); if (performance.now() - shownAt > 250) key(m.data); }
+  });
+
+  // motas de luz
+  const cv = $('fx'), ctx = cv.getContext('2d');
+  const fit = () => { cv.width = innerWidth; cv.height = innerHeight; }; addEventListener('resize', fit); fit();
+  const P = Array.from({ length: 70 }, () => ({ x: Math.random(), y: Math.random(), r: .6 + Math.random() * 2.4, v: .0006 + Math.random() * .0016, ph: Math.random() * 6.3 }));
+  const step = () => {
+    ctx.clearRect(0, 0, cv.width, cv.height); ctx.globalCompositeOperation = 'lighter';
+    for (const p of P) {
+      p.y -= p.v; p.ph += .02; if (p.y < -.02) { p.y = 1.02; p.x = Math.random(); }
+      const x = (p.x + Math.sin(p.ph) * .004) * cv.width, y = p.y * cv.height, a = .35 + .35 * Math.sin(p.ph * 2);
+      const g = ctx.createRadialGradient(x, y, 0, x, y, p.r * 6);
+      g.addColorStop(0, 'rgba(190,232,255,' + a + ')'); g.addColorStop(1, 'rgba(120,200,255,0)');
+      ctx.fillStyle = g; ctx.beginPath(); ctx.arc(x, y, p.r * 6, 0, 6.283); ctx.fill();
+    }
+    requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+})();
+</script>
+</body>
+</html>
