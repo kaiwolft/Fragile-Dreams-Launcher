@@ -39,7 +39,7 @@ El instalador aplica sobre tu copia europea la **traducción al castellano 1.1**
 - Mando Xbox y teclado/ratón a la vez, cambio automático, teclas editables; **iconos de botones de Xbox o de teclado y ratón** dentro del juego (tutoriales incluidos).
 - Menú de pausa con **L3 + R3** o **F1**: volumen del juego en vivo y volver al launcher.
 - **42 logros de RetroAchievements sin conexión**, con aviso dentro del juego. **Se guardan al guardar la partida**.
-- Sin la pantalla de la correa del Wiimote. Tiempo de juego, cursor propio y `AGREGAR_A_STEAM.bat` para añadirlo a Steam con su arte.
+- Sin la pantalla de la correa del Wiimote. Tiempo de juego, cursor propio y `AGREGAR_A_STEAM.bat` (Windows) y `agregar_a_steam.sh` (Linux / Steam Deck) para añadirlo a Steam con su arte.
 
 ## Capturas
 
@@ -89,6 +89,8 @@ Todo está en **[Releases](../../releases/latest)**:
    ```
    Si no abre, instala FUSE (`sudo apt install libfuse2`) o usa `--appimage-extract-and-run`.
 4. Elige idioma, aviso, tu copia y tu Dolphin, y pulsa **INSTALAR** (por defecto `~/Games/Fragile Dreams`).
+
+5. Opcional, **Steam / Steam Deck**: en la carpeta del juego ejecuta `./agregar_a_steam.sh` (el `.bat` es solo de Windows; este script hace lo mismo con Python 3: portada, fondo, logo e icono).
 
 > En Linux el juego corre en tu Dolphin: la cámara con stick derecho/ratón y los 60 FPS son del motor de Windows y no están disponibles. El movimiento 360°, el mando, los iconos de botones, el menú de pausa y los logros sí.
 
@@ -150,7 +152,7 @@ The installer applies the **Spanish fan translation 1.1** (xulikotony, CUE, TheK
 - Xbox controller and keyboard/mouse at the same time, automatic switching, rebindable keys; **Xbox or keyboard & mouse button prompts** in game (tutorials included).
 - Pause menu with **L3 + R3** or **F1**: live game volume and back to the launcher.
 - **42 offline RetroAchievements** with in-game pop-ups. **They are kept when you save your game.**
-- No Wii Remote strap screen. Play time, custom cursor and `AGREGAR_A_STEAM.bat` to add it to Steam with artwork.
+- No Wii Remote strap screen. Play time, custom cursor and `AGREGAR_A_STEAM.bat` (Windows) and `agregar_a_steam.sh` (Linux / Steam Deck) to add it to Steam with artwork.
 
 ### Screenshots
 | | |
@@ -172,6 +174,8 @@ chmod +x Instalar_Fragile_Dreams-x86_64.AppImage
 ./Instalar_Fragile_Dreams-x86_64.AppImage
 ```
 (if it does not start: `sudo apt install libfuse2` or `--appimage-extract-and-run`). On Linux the game runs in your Dolphin: the right-stick/mouse camera and 60 FPS belong to the Windows engine and are not available.
+
+**Steam / Steam Deck (Linux):** in the game folder run `./agregar_a_steam.sh` (the `.bat` is Windows-only; this script does the same with Python 3: cover, background, logo and icon).
 
 **Problems:** send `instalacion.log` (install folder) or `launcher/data/launcher.log`. If the controller does not respond under Steam: *right-click the game → Properties → Controller → Disable Steam Input*.
 

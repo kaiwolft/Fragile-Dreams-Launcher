@@ -21,3 +21,17 @@ EN
    If it was already added it is only updated (play time is kept). A backup shortcuts.vdf.antes_launchers is made.
 If the controller does not respond: Steam > right-click the game > Properties > Controller > "Disable Steam Input".
 Run it again if you move the game folder.
+
+LINUX / STEAM DECK
+------------------
+El .bat es solo de Windows. En Linux usa agregar_a_steam.sh (hace lo mismo con Python 3):
+1. Copia agregar_a_steam.sh, agregar_a_steam.py y la carpeta arte dentro de la carpeta del juego
+   (el instalador de Linux ya los deja ahi si vienen incluidos).
+2. En una terminal, dentro de esa carpeta:  ./agregar_a_steam.sh
+   (o: python3 agregar_a_steam.py /ruta/a/launcher/fragiledreams)
+3. Si Steam esta abierto se cierra solo; vuelve a abrirlo y el juego aparece con su arte.
+Funciona con Steam nativo, Flatpak y Steam Deck (modo escritorio).
+
+The .bat is Windows-only. On Linux use agregar_a_steam.sh (same thing, Python 3):
+copy agregar_a_steam.sh, agregar_a_steam.py and the arte folder into the game folder and run ./agregar_a_steam.sh
+(or: python3 agregar_a_steam.py /path/to/launcher/fragiledreams). Native Steam, Flatpak Steam and Steam Deck desktop mode.
