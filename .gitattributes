@@ -12,3 +12,4 @@ AppRun text eol=lf
 *.bin binary
 FILE_* binary
 instalador/appimage/runtime-x86_64 binary
+*.py text eol=lf

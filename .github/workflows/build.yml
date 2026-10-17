@@ -86,7 +86,7 @@ jobs:
           Copy-Item $dx.Directory.FullName "$P\dolphin" -Recurse
           Remove-Item "$P\dolphin\User", "$P\dolphin\portable.txt" -Recurse -Force -ErrorAction SilentlyContinue
           New-Item -ItemType Directory -Force "$P\steam" | Out-Null
-          Copy-Item steam\AGREGAR_A_STEAM.bat, steam\AGREGAR_A_STEAM.ps1, 'steam\LEEME - README.txt' "$P\steam\"
+          Copy-Item steam\AGREGAR_A_STEAM.bat, steam\AGREGAR_A_STEAM.ps1, steam\agregar_a_steam.sh, steam\agregar_a_steam.py, 'steam\LEEME - README.txt' "$P\steam\"
           Copy-Item steam\arte "$P\steam\arte" -Recurse
           Copy-Item instalador\docs\INSTRUCCIONES_Windows.txt "$W\INSTRUCCIONES - INSTRUCTIONS.txt"
           Remove-Item $tmp -Recurse -Force
@@ -129,7 +129,7 @@ jobs:
               { "src": "launcher/ui", "dst": "payload/launcher/ui" },
               { "src": "launcher/data", "dst": "payload/launcher/data" },
               { "src": "parche_es", "dst": "payload/parche_es", "exclude": ["LEEME_parche_castellano_1.1.txt"] },
-              { "src": "steam", "dst": "payload/steam", "exclude": ["AGREGAR_A_STEAM.bat", "AGREGAR_A_STEAM.ps1", "plantilla_AGREGAR_A_STEAM.ps1"], "exec": ["agregar_a_steam.sh", "agregar_a_steam.py"] }
+              { "src": "steam", "dst": "payload/steam", "exclude": ["plantilla_AGREGAR_A_STEAM.ps1"], "exec": ["agregar_a_steam.sh", "agregar_a_steam.py"] }
             ],
             "files": [
               { "src": "instalador/appimage/AppRun", "dst": "AppRun", "mode": 493 },

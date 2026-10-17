@@ -227,7 +227,7 @@ async function install(o) {
   if (exists(payload('steam'))) {
     try {
       copyDir(path.join(payload('steam'), 'arte'), path.join(dir, 'steam'));
-      const sf = IS_WIN ? ['AGREGAR_A_STEAM.bat', 'AGREGAR_A_STEAM.ps1'] : ['agregar_a_steam.sh', 'agregar_a_steam.py'];
+      const sf = ['AGREGAR_A_STEAM.bat', 'AGREGAR_A_STEAM.ps1', 'agregar_a_steam.sh', 'agregar_a_steam.py'];   // los dos: Windows y Linux / Steam Deck
       for (const f of sf.concat('LEEME - README.txt')) if (exists(path.join(payload('steam'), f))) {
         fs.copyFileSync(path.join(payload('steam'), f), path.join(dir, f));
         if (!IS_WIN && /\.(sh|py)$/.test(f)) try { fs.chmodSync(path.join(dir, f), 0o755); } catch (e) {}
